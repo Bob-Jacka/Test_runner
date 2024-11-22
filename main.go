@@ -30,9 +30,10 @@ const (
 )
 
 var test_results [4][]string //первый массив - игра, второй массив - результаты
-var test_stages [6]string
 
+var test_stages [6]string
 var games [4]string
+
 var start_time time.Time
 var end_time time.Time
 
@@ -40,18 +41,17 @@ func main() {
 	var args = len(os.Args)
 	if args == 1 {
 		fmt.Println("Utility usage:")
-		fmt.Println("first cli argument is <Games list>")
-		fmt.Println("second cli argument is <Game stages>")
+		fmt.Println("first cli argument is <Game stages>")
+		fmt.Println("second cli argument is <Games list>")
 		fmt.Println("third cli argument is <true / false write results to file>")
 		return
+	} else if args == 3 {
+		game_tests(os.Args[2], os.Args[3])
+		get_results(STtoB(os.Args[4]))
 	}
-	//else if args > 1 {
-	game_tests()
-	print_results()
-	//}
 }
 
-func game_tests() {
+func game_tests(game_stages_cli string, games_list_cli string) {
 	test_stages[0] = first_stage
 	test_stages[1] = second_stage
 	test_stages[2] = third_stage
@@ -133,6 +133,14 @@ func print_results() {
 	fmt.Println(runtime.GOMAXPROCS(runtime.NumCPU()))
 }
 
+func get_results(is_write_to_file bool) {
+	if !is_write_to_file {
+		print_results()
+	} else {
+
+	}
+}
+
 func reverse_scan(scan_val string) bool {
 	switch scan_val {
 	case "yes", "y", "ye", "1":
@@ -145,4 +153,28 @@ func reverse_scan(scan_val string) bool {
 	fmt.Println(colorRed, "Invalid argument")
 	defer os.Exit(1)
 	return false
+}
+
+func check_dir(str string) bool {
+	var _, smth = os.ReadDir(str)
+	if smth != nil {
+		fmt.Println(colorRed, "error occured")
+		os.Exit(1)
+		return false
+	} else {
+		return true
+	}
+}
+
+func STtoB(str string) bool {
+	switch str {
+	case "true", "True":
+		return true
+	case "false", "False":
+		return false
+	default:
+		fmt.Println(colorRed, "Invalid argument")
+		os.Exit(1)
+		return false
+	}
 }
