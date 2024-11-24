@@ -46,8 +46,12 @@ func main() {
 		fmt.Println("third cli argument is <true / false write results to file>")
 		return
 	} else if args == 3 {
-		game_tests(os.Args[2], os.Args[3])
-		get_results(STtoB(os.Args[4]))
+		game_tests(os.Args[1], os.Args[2])
+		get_results(AtoB(os.Args[3]))
+	} else {
+		fmt.Println(colorRed, "Given arguments - " + string(len(os.Args)))
+		fmt.Println(colorRed,"Error in arguments")
+		os.Exit(1)
 	}
 }
 
@@ -65,7 +69,7 @@ func game_tests(game_stages_cli string, games_list_cli string) {
 	games[3] = fourth_game
 	start_time = time.Now()
 	for game_num := 0; game_num < len(games); game_num++ {
-		fmt.Println()
+		fmt.Println(colorReset)
 		fmt.Println(strings.ToUpper(games[game_num]))
 		game_stages(game_num)
 	}
@@ -166,7 +170,7 @@ func check_dir(str string) bool {
 	}
 }
 
-func STtoB(str string) bool {
+func AtoB(str string) bool {
 	switch str {
 	case "true", "True":
 		return true
