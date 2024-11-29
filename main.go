@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"runtime"
 	"strings"
@@ -20,7 +19,7 @@ const (
 	cReset Color = "\033[0m"
 )
 
-var test_results [][]string //первый массив - игра, второй массив - результаты
+var test_results [][]string //первый массив - игра, второй массив - результаты тестов каждой игры
 
 var test_stages []string
 var games_list []string
@@ -28,30 +27,43 @@ var games_list []string
 var start_time time.Time
 var end_time time.Time
 
+var stage_count int
+
 func main() {
-	var args = len(os.Args)
-	if args == 1 {
+	var args_len = len(os.Args)
+	if args_len == 1 {
 		fmt.Println("Utility usage:")
-		fmt.Println("first cli argument is <Game stages>")
-		fmt.Println("second cli argument is <Games list>")
-		fmt.Println("third cli argument is <true / false write results to file>")
+		fmt.Println("First cli argument is <Devices>")
+		fmt.Println("Second cli argument is <Game stages>")
+		fmt.Println("Third cli argument is <true / false write results to file>")
 		return
-	} else if args == 3 {
+	} else if args_len == 3 {
+		var hardcodeed_bool_value = "false"
 		game_tests(os.Args[1], os.Args[2])
-		get_results(AtoB(os.Args[3]))
+		get_results(Atob(hardcodeed_bool_value))
+	} else if args_len == 4 {
+		game_tests(os.Args[1], os.Args[2])
+		get_results(Atob(os.Args[3]))
 	} else {
-		fmt.Println(red, "Given arguments - "+string(rune(len(os.Args))))
+		fmt.Println(red, "Given arguments - ")
+		fmt.Print(+len(os.Args))
 		fmt.Println(red, "Error in arguments")
 		os.Exit(1)
 	}
 	defer fmt.Println(cReset, "Bye")
 }
 
-func game_tests(game_stages_cli string, games_list_cli string) {
+func game_tests(game_stages_cli string, games_devices_cli string) {
 	start_time = time.Now()
 
-	test_stages = AtoS(game_stages_cli)
-	games_list = AtoS(games_list_cli)
+	test_stages = Atos(game_stages_cli, false)
+	games_list = Atos(games_devices_cli, true)
+	if stage_count != 0 {
+		test_results = make([][]string, len(games_devices_cli)+1)
+	} else {
+		printMSG("An error ocurred in making array test_results", red)
+		os.Exit(1)
+	}
 
 	for game_num := 0; game_num < len(games_list); game_num++ {
 		printMSG(strings.ToUpper(games_list[game_num]), yellow)
@@ -61,10 +73,11 @@ func game_tests(game_stages_cli string, games_list_cli string) {
 }
 
 func game_stages(game_num int) {
-	var stages_result = []string{"", "", "", "", "", ""}
+	var stages_result []string
 	for stage := 0; stage < len(test_stages); stage++ {
 		printMSG(strings.ToUpper(test_stages[stage]), yellow)
 		printMSG("Enter 1 for yes if success or 0 for no if not or skip to skip", yellow)
+		fmt.Print(green, ">> ")
 		var txt string
 		var _, error1 = fmt.Scan(&txt)
 		if error1 != nil {
@@ -72,8 +85,10 @@ func game_stages(game_num int) {
 			return
 		}
 		var res = reverse_scan(txt)
+		newSlice := make([]string, len(stages_result)+1, cap(stages_result)+1*2)
+		stages_result = newSlice
 		if res == true {
-			stages_result[stage] = test_stages[stage] + " no errors"
+			stages_result[stage] = test_stages[stage] + " No errors"
 		} else if res == false && txt == "skip" {
 			stages_result[stage] = test_stages[stage] + " TEST SKIPPED"
 		} else if res == false {
@@ -192,7 +207,6 @@ func write_to_file() {
 	} else {
 		print_results_chan(save_chan)
 	}
-
 	var writer = bufio.NewWriter(file)
 	for str := range save_chan {
 		writer.WriteString(str)
@@ -208,20 +222,29 @@ func reverse_scan(scan_val string) bool {
 		return false
 	case "skip":
 		return false
+	default:
+		printMSG("Invalid argument", red)
+		printMSG("Please, try again", green)
+		var txt string
+		var _, err = fmt.Scan(&txt)
+		if err != nil {
+			printMSG("Error in recursion", red)
+		}
+		return reverse_scan(txt)
 	}
-	fmt.Println(red, "Invalid argument")
-	defer os.Exit(1)
-	return false
 }
 
 /*
-проверка того, что переданный путь это файл
+Проверка того, что переданный путь это файл
 */
 func check_file(path string) bool {
-	var _, smth = os.ReadFile(path)
-	if smth != nil {
-		printMSG("error occured", red)
+	var _, err = os.Stat(path)
+	if err != nil {
+		printMSG("error occured in checking file", red)
 		check_dir(path)
+		if !strings.Contains(path, ".") {
+			printMSG("Maybe path is not contains file extension", red)
+		}
 		os.Exit(1)
 		return false
 	} else {
@@ -231,12 +254,12 @@ func check_file(path string) bool {
 }
 
 /*
-проверка того, что переданный путь это директория
+Проверка того, что переданный путь это директория
 */
 func check_dir(path string) bool {
 	var _, smth = os.ReadDir(path)
 	if smth != nil {
-		printMSG("error occured", red)
+		printMSG("error occured is checking dir", red)
 		os.Exit(1)
 		return false
 	} else {
@@ -246,9 +269,9 @@ func check_dir(path string) bool {
 }
 
 /*
-перевод строки в булево значение
+Перевод строки в булево значение
 */
-func AtoB(str string) bool {
+func Atob(str string) bool {
 	switch str {
 	case "true", "True", "1":
 		return true
@@ -262,14 +285,14 @@ func AtoB(str string) bool {
 }
 
 /*
-перевод строки в массив
+Перевод строки в массив
 */
-func AtoS(str string) []string {
+func Atos(str string, increm bool) []string {
 	if check_file(str) {
-		printMSG("Argument is a file", red)
-		return proceed_file(str)
+		printMSG("Argument is a file", green)
+		return proceed_file(str, increm)
 	} else if strings.Contains(str, ",") {
-		printMSG("using as separator ','", red)
+		printMSG("using as separator ','", green)
 		var splitted = strings.Split(str, ",")
 		return splitted
 	} else {
@@ -280,32 +303,35 @@ func AtoS(str string) []string {
 }
 
 /*
-	функция выполняет открытие файла и читает его содержимое
-	Возвращается содержимое файла
+Функция выполняет открытие файла и читает его содержимое (построчно)
+Возвращается содержимое файла
 */
-func proceed_file(path string) []string {
+func proceed_file(path string, increm bool) []string {
 	var file, err = os.Open(path)
 	if err != nil {
 		printMSG("error ocurred during file open", red)
 		file.Close()
 		os.Exit(1)
 	}
-	var data = make([]byte, 64)
 	var readed []string
-	for {
-		n, err := file.Read(data)
-		if err == io.EOF {
-			printMSG("End of file", red)
-			break
+	var reader = bufio.NewReader(file)
+	var scanner = bufio.NewScanner(reader)
+
+	for scanner.Scan() {
+		line := scanner.Text() //строка
+		if len(line) > 0 {
+			readed = append(readed, line)
+			if increm {
+				stage_count++
+			}
 		}
-		readed[] = string(data[:n])
 	}
 	defer file.Close()
 	return readed
 }
 
 /*
-	Вывод сообщения независимо от цвета
+Вывод сообщения независимо от цвета
 */
 func printMSG(str string, clr Color) {
 	fmt.Print(cReset)
