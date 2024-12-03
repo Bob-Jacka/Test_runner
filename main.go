@@ -33,9 +33,10 @@ func main() {
 	var args_len = len(os.Args)
 	if args_len == 1 {
 		fmt.Println("Utility usage:")
-		fmt.Println("First cli argument is <Devices>")
-		fmt.Println("Second cli argument is <Game stages>")
+		fmt.Println("First cli argument is <Game stages>")
+		fmt.Println("Second cli argument is <Devices>")
 		fmt.Println("Third cli argument is <true / false write results to file>")
+		fmt.Println()
 		return
 	} else if args_len == 3 {
 		var hardcodeed_bool_value = "false"
@@ -77,7 +78,6 @@ func game_stages(game_num int) {
 	for stage := 0; stage < len(test_stages); stage++ {
 		printMSG(strings.ToUpper(test_stages[stage]), yellow)
 		printMSG("Enter 1 for yes if success or 0 for no if not or skip to skip", yellow)
-		fmt.Print(green, ">> ")
 		var txt string
 		var _, error1 = fmt.Scan(&txt)
 		if error1 != nil {
@@ -215,6 +215,7 @@ func write_to_file() {
 }
 
 func reverse_scan(scan_val string) bool {
+	fmt.Print(green, ">> ")
 	switch scan_val {
 	case "yes", "y", "ye", "1":
 		return true
