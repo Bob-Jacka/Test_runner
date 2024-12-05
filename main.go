@@ -67,7 +67,7 @@ func game_tests(game_stages_cli string, games_devices_cli string) {
 	}
 
 	for game_num := 0; game_num < len(games_list); game_num++ {
-		printMSG(strings.ToUpper(games_list[game_num]), yellow)
+		printMSG(strings.ToUpper(games_list[game_num]), blue)
 		game_stages(game_num)
 	}
 	end_time = time.Now()
@@ -76,8 +76,9 @@ func game_tests(game_stages_cli string, games_devices_cli string) {
 func game_stages(game_num int) {
 	var stages_result []string
 	for stage := 0; stage < len(test_stages); stage++ {
-		printMSG(strings.ToUpper(test_stages[stage]), yellow)
+		printMSG(strings.ToUpper(test_stages[stage]), blue)
 		printMSG("Enter 1 for yes if success or 0 for no if not or skip to skip", yellow)
+		fmt.Print(green, ">> ")
 		var txt string
 		var _, error1 = fmt.Scan(&txt)
 		if error1 != nil {
@@ -94,11 +95,11 @@ func game_stages(game_num int) {
 		} else if res == false {
 			var problems string
 			printMSG("Напишите, что было не так в тесте: ", red)
-			var _, error2 = fmt.Scan(&problems)
+			var _, error2 = fmt.Scan(&problems) //TODO сделать массивом строк
 			if error2 != nil {
 				printMSG("an error occured in section about something bad in test", red)
 				return
-			}
+			} //TODO сделать сочетание -h для меню, где можно будет сохранить результат посередине пробега
 			stages_result[stage] = test_stages[stage] + problems
 		}
 	}
@@ -215,7 +216,6 @@ func write_to_file() {
 }
 
 func reverse_scan(scan_val string) bool {
-	fmt.Print(green, ">> ")
 	switch scan_val {
 	case "yes", "y", "ye", "1":
 		return true
@@ -225,7 +225,8 @@ func reverse_scan(scan_val string) bool {
 		return false
 	default:
 		printMSG("Invalid argument", red)
-		printMSG("Please, try again", green)
+		printMSG("Please, try again", red)
+		printMSG(">> ", green)
 		var txt string
 		var _, err = fmt.Scan(&txt)
 		if err != nil {
