@@ -1,18 +1,12 @@
 #include <ctype.h>
-#include <stdio.h>
 #include <time.h>
 #include <stdbool.h>
 #include <fileapi.h>
 #include "prototypes.h"
+#include "game_results.h"
 
 #include <stdlib.h>
 #include <string.h>
-
-Color red = "\033[31m";
-Color blue = "\033[34m";
-Color green = "\033[32m";
-Color yellow = "\033[33m";
-Color cReset = "\033[0m";
 
 game_results test_results[][]; //первый массив - игра, второй массив - результаты тестов каждой игры
 
@@ -37,9 +31,9 @@ int main(int argc, char *argv[]) {
     }
 
     if (args_len == 3) {
-        string hardcodeed_bool_value = "false";
+        string hardcoded_bool_value = "false";
         game_tests(os.Args[1], os.Args[2]);
-        get_results(Atob(hardcodeed_bool_value));
+        get_results(Atob(hardcoded_bool_value));
     } else if (args_len == 4) {
         game_tests(os.Args[1], os.Args[2]);
         get_results(Atob(os.Args[3]));
@@ -58,7 +52,8 @@ void game_tests(const string game_stages_cli, string games_devices_cli) {
     test_stages = Atos(game_stages_cli, false);
     games_list = Atos(games_devices_cli, true);
     if (stage_count != 0) {
-        test_results = make([][]string, len(games_devices_cli) + 1);
+        test_results = make([][]
+        string, len(games_devices_cli) + 1);
     } else {
         printMSG("An error ocurred in making array test_results", red);
         exit(1);
@@ -83,10 +78,9 @@ void game_stages(const int game_num) {
             printMSG("an error occured in scan game stage result", red);
             return;
         }
-        const string res = reverse_scan(txt);
-        []
-
-        string newSlice = make([]string, len(stages_result) + 1, cap(stages_result) + 1 * 2);
+        const string res = reverse_scan(*txt);
+        []string newSlice = make([]
+        string, len(stages_result) + 1, cap(stages_result) + 1 * 2);
         stages_result = newSlice;
         if (res == true) {
             stages_result[stage] = test_stages[stage] + " No errors";
@@ -99,11 +93,47 @@ void game_stages(const int game_num) {
             if (error2 != nil) {
                 printMSG("an error occured in section about something bad in test", red);
                 return;
-            } //TODO сделать сочетание -h для меню, где можно будет сохранить результат посередине пробега
+            }
             stages_result[stage] = test_stages[stage] + problems;
         }
     }
     test_results[game_num] = append(stages_result);
+}
+
+void get_help_menu(void) {
+    println();
+    println("This utility provide ability to run testing suites");
+    println("Program points:");
+    println("\t 1 - Save testing progress");
+    println("\t 2 - Print current results");
+    println("\t 3 - Get input cli parameters");
+    println("\t 4 - Close menu");
+    while (true) {
+        unsigned int option;
+        //TODO может быть ошибка, нужно приведение типа
+        scanf(&option)
+        switch (option) {
+            case 1:
+                println("Saving current testing progress");
+                break;
+            case 2:
+                println("Current results are:");
+                //TODO добавить вызов функции
+                break;
+            case 3:
+                println("Utility parameters");
+                println("First param are 'Game stages' (ex. tests that you want to test)");
+                println("Second param are 'Devices' (ex. android, ios, desktop)");
+                println("Third param is optional, but it point to write tests result to file or not (true \\ false)");
+                continue;
+            case 4:
+                println("Bye");
+                break;
+            default:
+                println("Invalid argument");
+                continue;
+        }
+    }
 }
 
 void get_results(const bool is_write_to_file) {
@@ -115,7 +145,7 @@ void get_results(const bool is_write_to_file) {
     }
 }
 
-void print_results() {
+void print_results(void) {
     printf("\n");
     for (int game_num = 0; game_num < len(test_results); game_num++) {
         printf(cReset);
@@ -127,37 +157,41 @@ void print_results() {
             }
         }
     }
+    println("Отчет по тестированию");
     unsigned long dur = end_time.Sub(start_time);
-    printf("\n");
-    printf("Времени на тестирование ушло: \n");
+    println();
+    println("Времени на тестирование ушло: ");
     printf(green, "\t Часов - ");
     printf(dur);
     printf(green, "\t Минут - ");
     printf(dur);
     printf(green, "\t Секунд - ");
     printf(dur);
-    printf("\n");
+    println();
     printf(yellow, "Other info");
-    printf(yellow, "Go compiler is " + runtime.Compiler);
-    printf(yellow, "Computer arch at time is " + runtime.GOARCH);
-    printf(yellow, "Max available processors are ");
-    printf(runtime.GOMAXPROCS(runtime.NumCPU()));
+//    printf(yellow, "Go compiler is " + runtime.Compiler);
+//    printf(yellow, "Computer arch at time is " + runtime.GOARCH);
+//    printf(yellow, "Max available processors are ");
+//    printf(runtime.GOMAXPROCS(runtime.NumCPU()));
 }
 
-bool reverse_scan(const string scan_val) {
-    switch (scan_val) {
+bool reverse_scan(const string *scan_val) {
+    switch (&scan_val) {
         case "1":
         case "ye":
         case "y":
         case "yes":
             return true;
-
         case "0":
         case "n":
         case "no":
             return false;
         case "skip":
             return false;
+        case "-h":
+        case "--help":
+            get_help_menu();
+            break;
 
         default:
             printMSG("Invalid argument", red);
@@ -178,7 +212,7 @@ bool reverse_scan(const string scan_val) {
 bool check_file(string path) {
     string _, err = os.Stat(path);
     if (err != nil) {
-        printMSG("error occured in checking file", red)
+        printMSG("Error occured in checking file", red)
         check_dir(path);
         if (!strstr(path, ".")) {
             printMSG("Maybe path is not contains file extension", red)
@@ -197,7 +231,7 @@ bool check_file(string path) {
 bool check_dir(string path) {
     FILE _, smth = os.ReadDir(path);
     if (smth != nil) {
-        printMSG("error occured is checking dir", red);
+        printMSG("Error occured is checking dir", red);
         exit(1);
         return false;
     } else {
@@ -213,10 +247,12 @@ bool Atob(const string str) {
     switch (str) {
         case "1":
         case "True":
-        case "true": return true;
+        case "true":
+            return true;
         case "0":
         case "False":
-        case "false": return false;
+        case "false":
+            return false;
         default:
             printMSG("Invalid argument", red);
             exit(1);
@@ -227,7 +263,9 @@ bool Atob(const string str) {
 /*
 Перевод строки в массив
 */
-[]string Atos(string str, bool increm) {
+[]
+
+string Atos(string str, bool increm) {
     if (check_file(str)) {
         printMSG("Argument is a file", green);
         return proceed_file(str, increm);
@@ -246,8 +284,11 @@ bool Atob(const string str) {
 Функция выполняет открытие файла и читает его содержимое (построчно)
 Возвращается содержимое файла
 */
-[]string proceed_file(string path, bool *increm) {
-    FILE file, err = open(path);
+
+[]
+
+string proceed_file(string path, bool *increm) {
+    FILE file, err = fopen(path, "r");
     if (err != nil) {
         printMSG("error ocurred during file open", red);
         file.Close();

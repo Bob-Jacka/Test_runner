@@ -1,19 +1,7 @@
 #pragma once
 #define nil = 0
-typedef char Color;
-typedef char string;
 
-struct one_test_result {
-    bool pass;
-    string name;
-    string errors_in_test;
-};
-
-typedef struct game_result {
-    string game_name;
-    string platform_name;
-    struct one_test_result test_res[];
-} game_results;
+#include <stdio.h>
 
 void game_stages(int game_num);
 
@@ -27,15 +15,21 @@ void print_results(void);
 
 void printMSG(string str, Color clr);
 
-[]string proceed_file(string path, bool increm);
+[]
+
+string proceed_file(string path, bool increm);
 
 bool check_dir(string path);
 
-[]string Atos(string str, bool increm);
+[]
+
+string Atos(string str, bool increm);
 
 bool Atob(string str);
 
 char *split_string(const char *str, const char delimiter, int *count);
+
+void get_help_menu(void);
 
 inline int len(char arr[]) {
     int count = 0;
@@ -45,10 +39,23 @@ inline int len(char arr[]) {
     return count;
 }
 
-inline int len(struct game_result results) {
-    int count = 0;
-    for (auto __: results.test_res) {
-        count++;
+inline void println(string msg) {
+    printf(msg + "\n")
+}
+
+inline void println(void) {
+    printf("\n")
+}
+
+inline char **create_arr(const int size) {
+    char **array = malloc(size * sizeof(char *));
+    for (auto int i = 0; i < size; i++) {
+        array[i] = malloc(50 * sizeof(char));
+        if (array[i] == NULL) {
+            println("Failed to allocate memory");
+            exit(1);
+        }
+        sprintf(array[i], "String %d", i);
     }
-    return count;
+    return array;
 }
