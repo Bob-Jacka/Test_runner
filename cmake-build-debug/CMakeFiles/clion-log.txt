@@ -1,7 +1,0 @@
-/home/kirill/clion-2019.2/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/kirill/Downloads/Test_runner
-CMake Error at CMakeLists.txt:1 (cmake_minimum_required):
-  CMake 3.30 or higher is required.  You are running version 3.14.5
-
-
--- Configuring incomplete, errors occurred!
-See also "/home/kirill/Downloads/Test_runner/cmake-build-debug/CMakeFiles/CMakeOutput.log".

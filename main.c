@@ -2,13 +2,14 @@
 #include <time.h>
 #include <stdbool.h>
 #include <fileapi.h>
-#include "prototypes.h"
-#include "game_results.h"
-
 #include <stdlib.h>
 #include <string.h>
 
-game_results test_results[][]; //первый массив - игра, второй массив - результаты тестов каждой игры
+#include "static_funcs.h"
+#include "prototypes.h"
+#include "game_results.h"
+
+one_device_results all_stages_test_results[][]; //Первый массив - игра, Второй массив - результаты тестов каждой игры
 
 string test_stages[];
 string games_list[];
@@ -16,88 +17,85 @@ string games_list[];
 time_t start_time;
 time_t end_time;
 
-int stage_count;
+unsigned int devices_count;
+unsigned int stage_count;
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     const unsigned int args_len = argc;
-    []char args = &argv;
-    if (args_len == 1) {
-        printf("Utility usage:");
-        printf("First cli argument is <Game stages>");
-        printf("Second cli argument is <Devices>");
-        printf("Third cli argument is <true / false write results to file>");
-        printf();
-        return 0;
-    }
-
-    if (args_len == 3) {
-        string hardcoded_bool_value = "false";
-        game_tests(os.Args[1], os.Args[2]);
-        get_results(Atob(hardcoded_bool_value));
-    } else if (args_len == 4) {
-        game_tests(os.Args[1], os.Args[2]);
-        get_results(Atob(os.Args[3]));
-    } else {
-        printf(red, "Given arguments - ");
-        printf(+len(os.Args));
-        printf(red, "Error in arguments");
-        exit(1);
+    const string *args = split_string(&argv, " ", args_len);
+    //TODO добавить в аргументы параметр - название игры
+    //TODO сделать передачу через параметры по типу: -h, --help
+    switch (args_len) {
+        case 1:
+            printf("Utility usage:");
+            printf("First cli argument is <Game stages>");
+            printf("Second cli argument is <Devices>");
+            printf("Third cli argument is <true / false write results to file>");
+            println();
+            return 0;
+        case 3:
+            const bool hardcoded_bool_value = false;
+            game_tests(args[1], args[2]);
+            get_results(hardcoded_bool_value);
+        case 4:
+            game_tests(args[1], args[2]);
+            get_results(Atob(args[3]));
+        default:
+            printf(red, "Given arguments - ");
+            printf(argc);
+            printf(red, "Error in arguments");
+            gracefully_exit();
     }
     printf(cReset, "Bye");
 }
 
-void game_tests(const string game_stages_cli, string games_devices_cli) {
+void game_tests(const string stages_cli, const string devices_cli) {
     ctime(&start_time);
-
-    test_stages = Atos(game_stages_cli, false);
-    games_list = Atos(games_devices_cli, true);
+    init_string_arr(test_stages, Atos(stages_cli, false));
+    init_string_arr(games_list, Atos(devices_cli, true));
     if (stage_count != 0) {
-        test_results = make([][]
-        string, len(games_devices_cli) + 1);
+        init_array_by(all_stages_test_results, one_device_results{});
     } else {
         printMSG("An error ocurred in making array test_results", red);
-        exit(1);
+        gracefully_exit();
     }
-
-    for (auto int game_num = 0; game_num < len(games_list); game_num++) {
-        printMSG(toupper(games_list[game_num]), blue);
-        game_stages(game_num);
+    for (counter_v device_num = 0; device_num < len(games_list); device_num++) {
+        game_stages(device_num);
     }
     ctime(&end_time);
 }
 
-void game_stages(const int game_num) {
-    []string stages_result;
-    for (auto int stage = 0; stage < len(test_stages); stage++) {
+void game_stages(const unsigned int device_num) {
+    one_test_result stages_result[];
+    printMSG(toupper(games_list[device_num]), blue);
+    for (counter_v stage = 0; stage < len(test_stages); stage++) {
         printMSG(toupper(test_stages[stage]), blue);
         printMSG("Enter 1 for yes if success or 0 for no if not or skip to skip", yellow);
         printf(green, ">> ");
-        string txt;
-        string _, error1 = scanf(&txt);
-        if (error1 != nil) {
+        string user_input;
+        const unsigned int _ = scanf("%s", &user_input);
+        if (_ != 1) {
             printMSG("an error occured in scan game stage result", red);
             return;
         }
-        const string res = reverse_scan(*txt);
-        []string newSlice = make([]
-        string, len(stages_result) + 1, cap(stages_result) + 1 * 2);
-        stages_result = newSlice;
+        const bool res = reverse_scan(user_input);
+        stages_result[stage] = one_test_result{};
         if (res == true) {
-            stages_result[stage] = test_stages[stage] + " No errors";
-        } else if (res == false && strcmp(txt, "skip") == 1) {
-            stages_result[stage] = test_stages[stage] + " TEST SKIPPED";
+            enter_data(stages_result[stage], true, "", test_stages[stage] + SUCCESS);
+        } else if (res == false && (strcmp(user_input, param_to_skip) == 1)) {
+            enter_data(stages_result[stage], true, "", strcat(test_stages[stage], SKIPPED));
         } else if (res == false) {
             string problems;
             printMSG("Напишите, что было не так в тесте: ", red);
-            string _, error2 = scanf(&problems); //TODO сделать массивом строк
-            if (error2 != nil) {
+            const unsigned int _ = scanf("%s", &problems);
+            if (_ != 1) {
                 printMSG("an error occured in section about something bad in test", red);
                 return;
             }
-            stages_result[stage] = test_stages[stage] + problems;
+            enter_data(stages_result[stage], false, strcat(test_stages[stage], FAILURE), problems);
         }
+        all_stages_test_results[device_num]->stages_res[stage] = stages_result[stage];
     }
-    test_results[game_num] = append(stages_result);
 }
 
 void get_help_menu(void) {
@@ -106,32 +104,44 @@ void get_help_menu(void) {
     println("Program points:");
     println("\t 1 - Save testing progress");
     println("\t 2 - Print current results");
-    println("\t 3 - Get input cli parameters");
-    println("\t 4 - Close menu");
+    println("\t 3 - Print test suit");
+    println("\t 4 - Get input cli parameters");
+    println("\t 5 - Close menu");
     while (true) {
         unsigned int option;
-        //TODO может быть ошибка, нужно приведение типа
-        scanf(&option)
-        switch (option) {
-            case 1:
-                println("Saving current testing progress");
-                break;
-            case 2:
-                println("Current results are:");
-                //TODO добавить вызов функции
-                break;
-            case 3:
-                println("Utility parameters");
-                println("First param are 'Game stages' (ex. tests that you want to test)");
-                println("Second param are 'Devices' (ex. android, ios, desktop)");
-                println("Third param is optional, but it point to write tests result to file or not (true \\ false)");
-                continue;
-            case 4:
-                println("Bye");
-                break;
-            default:
-                println("Invalid argument");
-                continue;
+        scanf(&option);
+        if (sizeof(option) == 4) {
+            switch (option) {
+                case 1:
+                    println("Saving current testing progress");
+                    break;
+                case 2:
+                    println("Current results are:");
+                    for (unknown _: all_stages_test_results) {
+                        printMSG(_);
+                    }
+                    break;
+                case 3:
+                    println("Utility parameters");
+                    println("First param are 'Game stages' (ex. tests that you want to test)");
+                    println("Second param are 'Devices' (ex. android, ios, desktop)");
+                    println(
+                        "Third param is optional, but it point to write tests result to file or not (true \\ false)");
+                    continue;
+                case 4:
+                    for (unknown _: test_stages) {
+                        printMSG(_);
+                    }
+                    break;
+                case 5:
+                    println("Bye");
+                    break;
+                default:
+                    println("Invalid argument");
+                    break;
+            }
+        } else {
+            println("Invalid argument type");
         }
     }
 }
@@ -147,59 +157,43 @@ void get_results(const bool is_write_to_file) {
 
 void print_results(void) {
     printf("\n");
-    for (int game_num = 0; game_num < len(test_results); game_num++) {
+    for (counter_v game_num = 0; game_num < len(all_stages_test_results); game_num++) {
         printf(cReset);
         printf(toupper(games_list[game_num]));
-        for (unsigned int stage = 0; stage < len(test_results[game_num]); stage++) {
-            struct game_result res = test_results[game_num][stage];
-            if (res != nil) {
-                printf(blue, "\t" + res);
-            }
+        for (counter_v stage = 0; stage < len(all_stages_test_results[game_num]); stage++) {
+            const string res = &all_stages_test_results[game_num][stage].stages_res->name;
+            printf(blue, strcat("\t", res));
         }
     }
     println("Отчет по тестированию");
-    unsigned long dur = end_time.Sub(start_time);
-    println();
-    println("Времени на тестирование ушло: ");
-    printf(green, "\t Часов - ");
-    printf(dur);
-    printf(green, "\t Минут - ");
-    printf(dur);
-    printf(green, "\t Секунд - ");
-    printf(dur);
-    println();
-    printf(yellow, "Other info");
-//    printf(yellow, "Go compiler is " + runtime.Compiler);
-//    printf(yellow, "Computer arch at time is " + runtime.GOARCH);
-//    printf(yellow, "Max available processors are ");
-//    printf(runtime.GOMAXPROCS(runtime.NumCPU()));
+    const unsigned long dur = start_time - end_time;
+    get_time(dur);
 }
 
 bool reverse_scan(const string *scan_val) {
     switch (&scan_val) {
-        case "1":
-        case "ye":
         case "y":
         case "yes":
             return true;
-        case "0":
         case "n":
         case "no":
             return false;
         case "skip":
             return false;
+        case "^C":
+            gracefully_exit();
         case "-h":
         case "--help":
             get_help_menu();
-            break;
+            return false;
 
         default:
             printMSG("Invalid argument", red);
             printMSG("Please, try again", red);
             printMSG(">> ", green);
             string txt;
-            string _, err = scanf(&txt);
-            if (err != nil) {
+            const unsigned int _ = scanf(&txt);
+            if (_ != 1) {
                 printMSG("Error in recursion", red);
             }
             return reverse_scan(txt);
@@ -209,15 +203,15 @@ bool reverse_scan(const string *scan_val) {
 /*
 Проверка того, что переданный путь это файл
 */
-bool check_file(string path) {
-    string _, err = os.Stat(path);
-    if (err != nil) {
-        printMSG("Error occured in checking file", red)
+bool check_file(const string path) {
+    const int _ = fopen(path, 'r');
+    if (_ == -1) {
+        printMSG("Error occured in checking file", red);
         check_dir(path);
         if (!strstr(path, ".")) {
-            printMSG("Maybe path is not contains file extension", red)
+            printMSG("Maybe path is not contains file extension", red);
         }
-        exit(1);
+        gracefully_exit();
         return false;
     } else {
         printMSG("File exists", green);
@@ -228,11 +222,11 @@ bool check_file(string path) {
 /*
 Проверка того, что переданный путь это директория
 */
-bool check_dir(string path) {
-    FILE _, smth = os.ReadDir(path);
-    if (smth != nil) {
+bool check_dir(const string path) {
+    const int _ = fopen(path, 'r');
+    if (_ != -1) {
         printMSG("Error occured is checking dir", red);
-        exit(1);
+        gracefully_exit();
         return false;
     } else {
         printMSG("Dir exists", yellow);
@@ -255,7 +249,7 @@ bool Atob(const string str) {
             return false;
         default:
             printMSG("Invalid argument", red);
-            exit(1);
+            gracefully_exit();
             return false;
     }
 }
@@ -263,51 +257,56 @@ bool Atob(const string str) {
 /*
 Перевод строки в массив
 */
-[]
-
-string Atos(string str, bool increm) {
+string *Atos(const char str[], const bool increm) {
     if (check_file(str)) {
         printMSG("Argument is a file", green);
         return proceed_file(str, increm);
-    } else if (strstr(str, ",")) {
+    }
+    if (strstr(str, ",")) {
         printMSG("using as separator ','", green);
-        string splitted = split_string(str, ",");
+        string *splitted = split_string(str, ",", len(str));
         return splitted;
     } else {
         printMSG("using as separator ' ' *whitespace", red);
-        string splitted = split_string(str, " ", 1);
+        string *splitted = split_string(str, " ", 1);
         return splitted;
     }
+}
+
+char *read_line_from_file(FILE *file) {
+    size_t size = 0;
+    char *line = NULL;
+    // Читаем строку из файла
+    if (get_line(&line, &size, file) == -1) {
+        free(line);
+        return NULL;
+    }
+    return line;
 }
 
 /*
 Функция выполняет открытие файла и читает его содержимое (построчно)
 Возвращается содержимое файла
 */
-
-[]
-
-string proceed_file(string path, bool *increm) {
-    FILE file, err = fopen(path, "r");
-    if (err != nil) {
+string *proceed_file(const string path, bool *increm) {
+    FILE *file = fopen(path, "r");
+    if (file != NULL) {
         printMSG("error ocurred during file open", red);
-        file.Close();
-        exit(1);
+        fclose(file);
+        gracefully_exit();
     }
-    []string readed;
-    var reader = bufio.NewReader(file);
-    var scanner = bufio.NewScanner(reader);
-    for (scanner.Scan()) {
-        string line = scanner.Text(); //строка
-        if (len(line) > 0) {
-            readed = append(readed, line);
-            if (increm) {
-                stage_count++;
-            }
+    string to_return[];
+    counter_v counter = 0;
+    char *readed_line = NULL; // Указатель на строку
+    size_t size = 0; // Размер буфера
+    while (get_line(&readed_line, &size, file) != -1) {
+        if (!strcmp(readed_line[0], not_include)) {
+            to_return[counter] = readed_line;
+            counter++;
         }
     }
-    file.Close();
-    return readed;
+    return to_return;
+    fclose(file);
 }
 
 /*
@@ -315,7 +314,7 @@ string proceed_file(string path, bool *increm) {
 */
 void printMSG(const string str, const Color clr) {
     printf(cReset + "\n");
-    printf(clr, str + "\n");
+    printf(clr, str, "\n");
     printf(cReset + "\n");
 }
 
