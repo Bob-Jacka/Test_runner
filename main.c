@@ -9,7 +9,14 @@
 #include "prototypes.h"
 #include "game_results.h"
 
-one_device_results all_stages_test_results[][]; //Первый массив - игра, Второй массив - результаты тестов каждой игры
+#define  red  "\x1b[31m"
+#define   blue  "\x1b[34m"
+#define   green  "\x1b[32m"
+#define   yellow  "\x1b[33m"
+#define   cReset  "\x1b[0m"
+
+one_device_results all_stages_test_results[][];
+//Первый массив - игра, Второй массив - результаты тестов каждой игры
 
 string test_stages[];
 string games_list[];
@@ -31,7 +38,7 @@ int main(const int argc, char *argv[]) {
             printf("First cli argument is <Game stages>");
             printf("Second cli argument is <Devices>");
             printf("Third cli argument is <true / false write results to file>");
-            println();
+            print_next_line();
             return 0;
         case 3:
             const bool hardcoded_bool_value = false;
@@ -41,12 +48,12 @@ int main(const int argc, char *argv[]) {
             game_tests(args[1], args[2]);
             get_results(Atob(args[3]));
         default:
-            printf(red, "Given arguments - ");
-            printf(argc);
-            printf(red, "Error in arguments");
+            printMSG("Given arguments - ", red);
+            printf(args_len);
+            printMSG("Error in arguments", red);
             gracefully_exit();
     }
-    printf(cReset, "Bye");
+    printf(cReset "Bye");
 }
 
 void game_tests(const string stages_cli, const string devices_cli) {
@@ -54,12 +61,12 @@ void game_tests(const string stages_cli, const string devices_cli) {
     init_string_arr(test_stages, Atos(stages_cli, false));
     init_string_arr(games_list, Atos(devices_cli, true));
     if (stage_count != 0) {
-        init_array_by(all_stages_test_results, one_device_results{});
+        init_array_by(all_stages_test_results, empty);
     } else {
         printMSG("An error ocurred in making array test_results", red);
         gracefully_exit();
     }
-    for (counter_v device_num = 0; device_num < len(games_list); device_num++) {
+    for (counter_v device_num = 0; device_num < size(games_list); device_num++) {
         game_stages(device_num);
     }
     ctime(&end_time);
@@ -67,13 +74,13 @@ void game_tests(const string stages_cli, const string devices_cli) {
 
 void game_stages(const unsigned int device_num) {
     one_test_result stages_result[];
-    printMSG(toupper(games_list[device_num]), blue);
-    for (counter_v stage = 0; stage < len(test_stages); stage++) {
-        printMSG(toupper(test_stages[stage]), blue);
+    printMSG(games_list[device_num], blue);
+    for (counter_v stage = 0; stage < size(test_stages); stage++) {
+        printMSG(test_stages[stage], blue);
         printMSG("Enter 1 for yes if success or 0 for no if not or skip to skip", yellow);
-        printf(green, ">> ");
+        printMSG(">> ", green);
         string user_input;
-        const unsigned int _ = scanf("%s", &user_input);
+        const unsigned int _ = scanf("%c", &user_input);
         if (_ != 1) {
             printMSG("an error occured in scan game stage result", red);
             return;
@@ -81,8 +88,8 @@ void game_stages(const unsigned int device_num) {
         const bool res = reverse_scan(user_input);
         stages_result[stage] = one_test_result{};
         if (res == true) {
-            enter_data(stages_result[stage], true, "", test_stages[stage] + SUCCESS);
-        } else if (res == false && (strcmp(user_input, param_to_skip) == 1)) {
+            enter_data(stages_result[stage], true, "", strcat(test_stages[stage], SUCCESS));
+        } else if (res == false && strcmp(user_input, param_to_skip) != 0) {
             enter_data(stages_result[stage], true, "", strcat(test_stages[stage], SKIPPED));
         } else if (res == false) {
             string problems;
@@ -99,7 +106,7 @@ void game_stages(const unsigned int device_num) {
 }
 
 void get_help_menu(void) {
-    println();
+    print_next_line();
     println("This utility provide ability to run testing suites");
     println("Program points:");
     println("\t 1 - Save testing progress");
@@ -108,7 +115,7 @@ void get_help_menu(void) {
     println("\t 4 - Get input cli parameters");
     println("\t 5 - Close menu");
     while (true) {
-        unsigned int option;
+        unsigned int *option;
         scanf(&option);
         if (sizeof(option) == 4) {
             switch (option) {
@@ -157,11 +164,11 @@ void get_results(const bool is_write_to_file) {
 
 void print_results(void) {
     printf("\n");
-    for (counter_v game_num = 0; game_num < len(all_stages_test_results); game_num++) {
+    for (counter_v game_num = 0; game_num < size(all_stages_test_results); game_num++) {
         printf(cReset);
-        printf(toupper(games_list[game_num]));
-        for (counter_v stage = 0; stage < len(all_stages_test_results[game_num]); stage++) {
-            const string res = &all_stages_test_results[game_num][stage].stages_res->name;
+        printf(games_list[game_num]); //TODO большие строки
+        for (counter_v stage = 0; stage < size(all_stages_test_results[game_num]); stage++) {
+            const string res = all_stages_test_results[game_num][stage].stages_res->name;
             printf(blue, strcat("\t", res));
         }
     }
@@ -170,29 +177,27 @@ void print_results(void) {
     get_time(dur);
 }
 
-bool reverse_scan(const string *scan_val) {
+bool reverse_scan(const char scan_val) {
     switch (&scan_val) {
-        case "y":
-        case "yes":
+        case 'y':
             return true;
-        case "n":
-        case "no":
+        case 'n':
             return false;
-        case "skip":
+        case 's':
             return false;
-        case "^C":
+        case '^C':
             gracefully_exit();
-        case "-h":
-        case "--help":
-            get_help_menu();
-            return false;
+        // case '-h':
+        // case "--help":
+        //     get_help_menu();
+        //     return false;
 
         default:
             printMSG("Invalid argument", red);
             printMSG("Please, try again", red);
             printMSG(">> ", green);
-            string txt;
-            const unsigned int _ = scanf(&txt);
+            char txt;
+            const unsigned int _ = scanf("%c", &txt);
             if (_ != 1) {
                 printMSG("Error in recursion", red);
             }
@@ -264,7 +269,7 @@ string *Atos(const char str[], const bool increm) {
     }
     if (strstr(str, ",")) {
         printMSG("using as separator ','", green);
-        string *splitted = split_string(str, ",", len(str));
+        string *splitted = split_string(str, ",", strlen(str));
         return splitted;
     } else {
         printMSG("using as separator ' ' *whitespace", red);
@@ -300,7 +305,7 @@ string *proceed_file(const string path, bool *increm) {
     char *readed_line = NULL; // Указатель на строку
     size_t size = 0; // Размер буфера
     while (get_line(&readed_line, &size, file) != -1) {
-        if (!strcmp(readed_line[0], not_include)) {
+        if (!strcmp(&readed_line[0], not_include)) {
             to_return[counter] = readed_line;
             counter++;
         }
@@ -313,9 +318,9 @@ string *proceed_file(const string path, bool *increm) {
 Вывод сообщения независимо от цвета
 */
 void printMSG(const string str, const Color clr) {
-    printf(cReset + "\n");
+    printf("\n" cReset);
     printf(clr, str, "\n");
-    printf(cReset + "\n");
+    printf("\n" cReset);
 }
 
 char *split_string(const char *str, const char delimiter, int *count) {
@@ -338,7 +343,7 @@ char *split_string(const char *str, const char delimiter, int *count) {
     const char *token = strtok(temp_str, &delimiter);
     int index = 0;
     while (token) {
-        result[index++] = strdup(token);
+        result[index++] = strdup(&token);
         token = strtok(NULL, &delimiter);
     }
     free(temp_str);

@@ -1,12 +1,13 @@
 #pragma once
 #include <stdio.h>
 #include "custom_types.h"
+#include "game_results.h"
 
 inline void println(const string msg) {
-    printf(msg, +"\n");
+    printf(msg, "\n");
 }
 
-inline void println(void) {
+inline void print_next_line() {
     printf("\n");
 }
 
@@ -21,14 +22,6 @@ inline char **create_arr(const int size) {
         sprintf(array[i], "String %d", i);
     }
     return array;
-}
-
-inline int len(char arr[]) {
-    int count = 0;
-    for (auto __: arr) {
-        count++;
-    }
-    return count;
 }
 
 inline void gracefully_exit(void) {
@@ -84,22 +77,25 @@ inline ssize_t get_line(char **lineptr, size_t *n, FILE *stream) {
 }
 
 inline void init_string_arr(string to_which[], string from_which[]) {
-    for (auto __: from_which) {
-        if (from_which[__] != NULL) {
-            to_which[__] = from_which[__];
+    counter_v counter = 0;
+    for (counter_v i = 0; i < sizeof(to_which) / sizeof(to_which[0]); i++) {
+        string elem = from_which[i];
+        if (elem != NULL) {
+            to_which[counter] = elem;
         }
+        counter++;
     }
 }
 
 /*
- * поддерживается только двойной массив (массив массивов)
+ * Поддерживается только двойной массив (массив массивов)
  */
-inline void init_array_by(string to_which[][], const unknown by) {
+inline void init_array_by(string to_which[][], const one_test_result by) {
     unsigned int inner_array = 0;
     unsigned int outer_array = 0;
-    for (outer_array = 0; outer_array < len(to_which); outer_array++) {
-        for (inner_array = 0; inner_array < len(to_which[outer_array]); inner_array++) {
-            to_which[outer_array][inner_array] = by;
+    for (outer_array = 0; outer_array < size(to_which); outer_array++) { //TODO сделать функцию для длинны массива массивов
+        for (inner_array = 0; inner_array < size(to_which[outer_array]); inner_array++) {
+            to_which[outer_array][inner_array] = &by;
         }
     }
 }
@@ -108,3 +104,7 @@ inline void get_time(long seconds_time) {
     //tODO сделать функцию для определения времени
 }
 
+inline int double_array_len(string array[][]) {
+    size_t outer_length = sizeof(array) / sizeof(array[0]);
+    size_t inner_length = sizeof(array[0]) / sizeof(array[0][0]);
+}

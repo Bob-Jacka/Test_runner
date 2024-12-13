@@ -1,6 +1,6 @@
 #pragma once
 
-void game_stages(int device_num);
+void game_stages(unsigned int device_num);
 
 void game_tests(string stages_cli, string devices_cli);
 
@@ -23,3 +23,8 @@ bool Atob(string str);
 char *split_string(const char *str, char delimiter, int *count);
 
 void get_help_menu(void);
+
+//////////////////////////////////////////////////////////////////////
+void print_next_line();
+
+void println(string msg);
