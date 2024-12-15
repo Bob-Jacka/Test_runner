@@ -5,11 +5,12 @@
 #include "game_results.h"
 
 inline void println(const string msg) {
-    printf(msg, "\n");
+    std::cout << msg;
+    std::cout << "\n";
 }
 
 inline void print_next_line() {
-    printf("\n");
+    std::cout << "\n";
 }
 
 inline char **create_arr(counter_v size) {
