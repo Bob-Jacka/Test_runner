@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdio.h>
 #include "custom_types.h"
 #include "game_results.h"
@@ -11,7 +12,7 @@ inline void print_next_line() {
     printf("\n");
 }
 
-inline char **create_arr(const int size) {
+inline char **create_arr(counter_v size) {
     char **array = malloc(size * sizeof(char *));
     for (auto int i = 0; i < size; i++) {
         array[i] = malloc(50 * sizeof(char));
@@ -93,18 +94,73 @@ inline void init_string_arr(string to_which[], string from_which[]) {
 inline void init_array_by(string to_which[][], const one_test_result by) {
     unsigned int inner_array = 0;
     unsigned int outer_array = 0;
-    for (outer_array = 0; outer_array < size(to_which); outer_array++) { //TODO сделать функцию для длинны массива массивов
+    for (outer_array = 0;
+         outer_array < size(to_which); outer_array++) { //TODO сделать функцию для длинны массива массивов
         for (inner_array = 0; inner_array < size(to_which[outer_array]); inner_array++) {
             to_which[outer_array][inner_array] = &by;
         }
     }
 }
 
-inline void get_time(long seconds_time) {
-    //tODO сделать функцию для определения времени
+inline void get_time_stat(long seconds_time) {
+    println("Отчет по тестированию");
+    println("На тестирование ушло");
+    counter_v minutes = seconds_time / 60;
+    counter_v hours = minutes > 60 ? minutes / 60 : 0;
+    counter_v seconds = 0; //TODO дописать секунды
+    printf("%d часов\n %d минут\n %d секунд\n", hours, minutes, seconds);
 }
 
 inline int double_array_len(string array[][]) {
     size_t outer_length = sizeof(array) / sizeof(array[0]);
     size_t inner_length = sizeof(array[0]) / sizeof(array[0][0]);
+}
+
+/*
+ * Печать строки в верхнем регистре
+ */
+inline void print_upper(string str) {
+    int j = 0;
+    char ch;
+    while (str[j]) {
+        ch = str[j];
+        putchar(toupper(ch));
+        j++;
+    }
+}
+
+inline char *split_string(const char *str, const char delimiter, int *count) {
+    char *temp_str = strdup(str);
+    if (!temp_str) {
+        return NULL;
+    }
+    *count = 0;
+    for (const char *p = temp_str; *p; p++) {
+        if (*p == delimiter) {
+            (*count)++;
+        }
+    }
+    (*count)++;
+    char *result = malloc(*count * sizeof(char *));
+    if (!result) {
+        free(temp_str);
+        return NULL;
+    }
+    const char *token = strtok(temp_str, &delimiter);
+    int index = 0;
+    while (token) {
+        result[index++] = strdup(*token);
+        token = strtok(NULL, &delimiter);
+    }
+    free(temp_str);
+    return result;
+}
+
+/*
+Вывод сообщения независимо от цвета
+*/
+void printMSG(const string str, const Color clr) {
+    printf("\n"cReset);
+    printf(clr, str, "\n");
+    printf("\n"cReset);
 }

@@ -5,9 +5,13 @@ typedef unsigned int counter_v;
 typedef __resharper_unknown_type unknown; //TODO сделать generic
 // typedef _Generic() unknown2;
 #define nil = 0
-const string not_include = "*";
+#define  red  "\x1b[31m"
+#define   blue  "\x1b[34m"
+#define   green  "\x1b[32m"
+#define   yellow  "\x1b[33m"
+#define   cReset  "\x1b[0m"
+#define ignore_test "*"
 
 const string SUCCESS = "No error";
 const string FAILURE = "Failure";
 const string SKIPPED = "Skipped";
-const string param_to_skip = "skip";

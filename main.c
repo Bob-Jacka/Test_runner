@@ -1,19 +1,13 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdbool.h>
-#include <fileapi.h>
 #include <stdlib.h>
 #include <string.h>
+#include <conio.h>
 
 #include "static_funcs.h"
 #include "prototypes.h"
 #include "game_results.h"
-
-#define  red  "\x1b[31m"
-#define   blue  "\x1b[34m"
-#define   green  "\x1b[32m"
-#define   yellow  "\x1b[33m"
-#define   cReset  "\x1b[0m"
 
 one_device_results all_stages_test_results[][];
 //Первый массив - игра, Второй массив - результаты тестов каждой игры
@@ -28,14 +22,12 @@ unsigned int devices_count;
 unsigned int stage_count;
 
 int main(const int argc, char *argv[]) {
-    const unsigned int args_len = argc;
-    const string *args = split_string(&argv, " ", args_len);
+    const string args = split_string(*argv, " ", argc);
     //TODO добавить в аргументы параметр - название игры
-    //TODO сделать передачу через параметры по типу: -h, --help
-    switch (args_len) {
+    switch (argc) {
         case 1:
             printf("Utility usage:");
-            printf("First cli argument is <Game stages>");
+            printf("First cli argument is <Test stages>");
             printf("Second cli argument is <Devices>");
             printf("Third cli argument is <true / false write results to file>");
             print_next_line();
@@ -49,7 +41,7 @@ int main(const int argc, char *argv[]) {
             get_results(Atob(args[3]));
         default:
             printMSG("Given arguments - ", red);
-            printf(args_len);
+            printf(argc);
             printMSG("Error in arguments", red);
             gracefully_exit();
     }
@@ -72,30 +64,25 @@ void game_tests(const string stages_cli, const string devices_cli) {
     ctime(&end_time);
 }
 
-void game_stages(const unsigned int device_num) {
+void game_stages(const counter_v device_num) {
     one_test_result stages_result[];
     printMSG(games_list[device_num], blue);
     for (counter_v stage = 0; stage < size(test_stages); stage++) {
-        printMSG(test_stages[stage], blue);
-        printMSG("Enter 1 for yes if success or 0 for no if not or skip to skip", yellow);
+        print_upper(test_stages[stage]);
+        printMSG("Enter (yes / 1) for success or (no / 0) for failure or skip to skip", yellow);
         printMSG(">> ", green);
-        string user_input;
-        const unsigned int _ = scanf("%c", &user_input);
-        if (_ != 1) {
-            printMSG("an error occured in scan game stage result", red);
-            return;
-        }
-        const bool res = reverse_scan(user_input);
-        stages_result[stage] = one_test_result{};
-        if (res == true) {
+        const string res = reverse_scan(user_input);
+        stages_result[stage] = one_test_result
+        {};
+        if (res == SUCCESS) {
             enter_data(stages_result[stage], true, "", strcat(test_stages[stage], SUCCESS));
-        } else if (res == false && strcmp(user_input, param_to_skip) != 0) {
+        } else if (res == SKIPPED) {
             enter_data(stages_result[stage], true, "", strcat(test_stages[stage], SKIPPED));
-        } else if (res == false) {
+        } else if (res == FAILURE) {
             string problems;
             printMSG("Напишите, что было не так в тесте: ", red);
-            const unsigned int _ = scanf("%s", &problems);
-            if (_ != 1) {
+            const unsigned int _ = scanf("%s", &problems); //TODO учитывает только одно слово
+            if (_ > 0) {
                 printMSG("an error occured in section about something bad in test", red);
                 return;
             }
@@ -116,15 +103,16 @@ void get_help_menu(void) {
     println("\t 5 - Close menu");
     while (true) {
         unsigned int *option;
+        printf(">> ");
         scanf(&option);
-        if (sizeof(option) == 4) {
+        if ((isdigit(*option)) == true) {
             switch (option) {
                 case 1:
                     println("Saving current testing progress");
                     break;
                 case 2:
                     println("Current results are:");
-                    for (unknown _: all_stages_test_results) {
+                    for (one_device_results _: all_stages_test_results) {
                         printMSG(_);
                     }
                     break;
@@ -132,19 +120,15 @@ void get_help_menu(void) {
                     println("Utility parameters");
                     println("First param are 'Game stages' (ex. tests that you want to test)");
                     println("Second param are 'Devices' (ex. android, ios, desktop)");
-                    println(
-                        "Third param is optional, but it point to write tests result to file or not (true \\ false)");
+                    println("Third param is optional, but it point to write tests result to file or not (true \\ false)");
                     continue;
                 case 4:
-                    for (unknown _: test_stages) {
+                    for (string _: test_stages) {
                         printMSG(_);
                     }
                     break;
                 case 5:
                     println("Bye");
-                    break;
-                default:
-                    println("Invalid argument");
                     break;
             }
         } else {
@@ -166,31 +150,36 @@ void print_results(void) {
     printf("\n");
     for (counter_v game_num = 0; game_num < size(all_stages_test_results); game_num++) {
         printf(cReset);
-        printf(games_list[game_num]); //TODO большие строки
+        print_upper(games_list[game_num]); //TODO большие строки
         for (counter_v stage = 0; stage < size(all_stages_test_results[game_num]); stage++) {
             const string res = all_stages_test_results[game_num][stage].stages_res->name;
             printf(blue, strcat("\t", res));
         }
     }
-    println("Отчет по тестированию");
     const unsigned long dur = start_time - end_time;
-    get_time(dur);
+    get_time_stat(dur);
 }
 
-bool reverse_scan(const char scan_val) {
-    switch (&scan_val) {
-        case 'y':
-            return true;
-        case 'n':
-            return false;
-        case 's':
-            return false;
-        case '^C':
+string reverse_scan() {
+    string user_input;
+    const unsigned int _ = scanf("%s", &user_input);
+    if (_ > 0) {
+        printMSG("an error occured in scan game stage result", red);
+        return;
+    }
+    switch (*user_input) {
+        case "y":
+            return SUCCESS;
+        case "n":
+            return FAILURE;
+        case "s":
+            return SKIPPED;
+        case "^C":
             gracefully_exit();
-        // case '-h':
-        // case "--help":
-        //     get_help_menu();
-        //     return false;
+        case "-h":
+        case "--help":
+            get_help_menu();
+            return false;
 
         default:
             printMSG("Invalid argument", red);
@@ -198,7 +187,7 @@ bool reverse_scan(const char scan_val) {
             printMSG(">> ", green);
             char txt;
             const unsigned int _ = scanf("%c", &txt);
-            if (_ != 1) {
+            if (_ > 0) {
                 printMSG("Error in recursion", red);
             }
             return reverse_scan(txt);
@@ -209,7 +198,7 @@ bool reverse_scan(const char scan_val) {
 Проверка того, что переданный путь это файл
 */
 bool check_file(const string path) {
-    const int _ = fopen(path, 'r');
+    const int _ = fopen(path, "r");
     if (_ == -1) {
         printMSG("Error occured in checking file", red);
         check_dir(path);
@@ -228,7 +217,7 @@ bool check_file(const string path) {
 Проверка того, что переданный путь это директория
 */
 bool check_dir(const string path) {
-    const int _ = fopen(path, 'r');
+    const int _ = fopen(path, "r");
     if (_ != -1) {
         printMSG("Error occured is checking dir", red);
         gracefully_exit();
@@ -243,7 +232,7 @@ bool check_dir(const string path) {
 Перевод строки в булево значение
 */
 bool Atob(const string str) {
-    switch (str) {
+    switch (*str) {
         case "1":
         case "True":
         case "true":
@@ -278,17 +267,6 @@ string *Atos(const char str[], const bool increm) {
     }
 }
 
-char *read_line_from_file(FILE *file) {
-    size_t size = 0;
-    char *line = NULL;
-    // Читаем строку из файла
-    if (get_line(&line, &size, file) == -1) {
-        free(line);
-        return NULL;
-    }
-    return line;
-}
-
 /*
 Функция выполняет открытие файла и читает его содержимое (построчно)
 Возвращается содержимое файла
@@ -300,52 +278,14 @@ string *proceed_file(const string path, bool *increm) {
         fclose(file);
         gracefully_exit();
     }
-    string to_return[];
-    counter_v counter = 0;
-    char *readed_line = NULL; // Указатель на строку
-    size_t size = 0; // Размер буфера
-    while (get_line(&readed_line, &size, file) != -1) {
-        if (!strcmp(&readed_line[0], not_include)) {
-            to_return[counter] = readed_line;
-            counter++;
+    char fileLine[100];
+    string file;
+    while (!feof(file)) {
+        fgets(fileLine, 100, file);
+        if (!feof(file)) {
+            puts(fileLine);
         }
     }
-    return to_return;
-    fclose(file);
-}
-
-/*
-Вывод сообщения независимо от цвета
-*/
-void printMSG(const string str, const Color clr) {
-    printf("\n" cReset);
-    printf(clr, str, "\n");
-    printf("\n" cReset);
-}
-
-char *split_string(const char *str, const char delimiter, int *count) {
-    char *temp_str = strdup(str);
-    if (!temp_str) {
-        return NULL;
-    }
-    *count = 0;
-    for (const char *p = temp_str; *p; p++) {
-        if (*p == delimiter) {
-            (*count)++;
-        }
-    }
-    (*count)++;
-    char *result = malloc(*count * sizeof(char *));
-    if (!result) {
-        free(temp_str);
-        return NULL;
-    }
-    const char *token = strtok(temp_str, &delimiter);
-    int index = 0;
-    while (token) {
-        result[index++] = strdup(&token);
-        token = strtok(NULL, &delimiter);
-    }
-    free(temp_str);
-    return result;
+    fclose(file); //TODO возвращается только прочитанная строка
+    return fileLine;
 }
