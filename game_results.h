@@ -3,76 +3,140 @@
 /*
 * inner array in game results representing one test result
  */
-typedef struct {
+class one_test_result {
     bool pass;
-    string name;
-    string errors_in_test;
-} one_test_result;
+    std::string name;
+    std::string errors_in_test;
+
+public:
+
+    one_test_result(const bool pass, const std::string &name, const std::string &errors_in_test) {
+        this->pass = pass;
+        this->name = name;
+        this->errors_in_test = errors_in_test;
+    }
+
+    one_test_result();
+
+    ~one_test_result();
+
+    [[nodiscard]] bool get_pass() const {
+        return this->pass;
+    }
+
+    [[nodiscard]] std::string get_name() const {
+        return this->name;
+    }
+
+    [[nodiscard]] std::string get_errors_in_test() const {
+        return this->errors_in_test;
+    }
+
+    void set_game_name(const string new_name) {
+        this->name = new_name;
+    }
+
+    void set_pass(const bool is_pass) {
+        this->pass = is_pass;
+    }
+
+    void set_errors_in_test(const string &new_test_result) {
+        errors_in_test = new_test_result;
+    }
+};
+
+one_test_result get_empty(); //static function's prototype
 
 /*
  * type that define game results
  */
-typedef struct {
-    string game_name;
-    string platform_name;
+class one_device_results {
+    std::string game_name;
+    std::string platform_name;
+    List<one_test_result> stages_res;
 
-    void (*clearState)();
+public:
 
-    void (*init)();
+    /*
+     * method that makes unique object of game_result object
+     */
+    one_device_results(const const_string game_name, const const_string platform_name, counter_v size) {
+        const one_test_result test_result[size];
+        const one_device_results to_return = {
+            .game_name = game_name,
+            .platform_name = platform_name,
+            .stages_res = test_result
+        };
+    }
 
-    void (*size)();
+    one_device_results();
 
-    void (*forAnyOne)();
+    std::string get_game_name() {
+        return this->game_name;
+    }
 
-    one_test_result stages_res[];
-} one_device_results;
+    std::string get_platform_name() {
+        return this->platform_name;
+    }
 
-one_test_result empty = {
-    .pass = false,
-    .name = "",
-    .errors_in_test = ""
+    List<one_test_result> get_stages_res() {
+        return this->stages_res;
+    }
+
+    void set_game_name(const_string new_name) {
+        this->game_name = new_name;
+    }
+
+    void set_platform_name(const_string new_platform_name) {
+        this->platform_name = new_platform_name;
+    }
+
+    void set_stages_res(const one_test_result &new_test_result, const counter_v position) {
+        this->stages_res.getElement(position) = new_test_result;
+    }
+
+    /*
+     * method that clears array
+     */
+    void clear(const counter_v size) {
+        for (int i = 0; i < size; i++) {
+            this->stages_res.getElement(i).~one_test_result();
+        }
+        this->stages_res.~List();
+    }
+
+    [[nodiscard]] counter_v size() const {
+        counter_v counter = 0;
+        for ([[maybe_unused]] const auto &stage: this->stages_res) {
+            counter++;
+        }
+        return counter;
+    }
+
+    /*
+     * for each inner element print
+     */
+    void foreach(one_test_result *unknown<one_test_result()> &f) {
+        for (counter_v i = 0; i < size(); i++) {
+            f(this->stages_res.getFront());
+        }
+    }
+
+    one_device_results &operator=(const char *by) {
+        return *this;
+    };
 };
 
-/*
- * method that makes unique object of game_result object
- */
-inline one_device_results __init__(const string game_name, const string platform_name) {
-    // const one_test_result test_result[];
-    const one_device_results to_return = {
-        .game_name = game_name,
-        .platform_name = platform_name,
-        // .stages_res = test_result
+inline one_test_result get_empty() {
+    return one_test_result{
+        .pass = false,
+        .name = "",
+        .errors_in_test = "",
     };
-    return to_return;
-}
-
-/*
- * method that clears array
- */
-inline void clear(char **array, const unsigned int size) {
-    for (int i = 0; i < size; i++) {
-        free(array[i]);
-    }
-    free(array);
-}
-
-inline counter_v size(const one_device_results *result) {
-    return sizeof(&result->stages_res) / sizeof(result->stages_res[0]);
-}
-
-/*
- * for each inner element print
- */
-inline void foreach(const one_device_results iterable, unknown *func) {
-    const counter_v length = size(&iterable);
-    int (*fptr)(one_test_result) = func;
-    for (counter_v i = 0; i < length; i++) {
-        fptr(iterable.stages_res[i]); //TODO может быть ошибка из - за того, что не ссылка
-    }
 }
 
 inline void enter_data(one_test_result to_input, const bool is_pass, const string test_name, const string errors) {
-    to_input.pass = is_pass;
-    to_input.name = test_name;
-    to_input.errors_in_test = errors;
+    to_input.set_pass(is_pass);
+    to_input.set_game_name(test_name);
+    to_input.set_errors_in_test(errors);
 }

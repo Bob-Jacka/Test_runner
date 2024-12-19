@@ -2,29 +2,20 @@
 
 void game_stages(unsigned int device_num);
 
-void game_tests(string stages_cli, string devices_cli);
+void game_tests(const_string stages_cli, string devices_cli);
 
-bool reverse_scan(string scan_val);
+string reverse_scan();
 
 void get_results(bool is_write_to_file);
 
-void print_results(void);
+void print_results();
 
-void printMSG(string str, Color clr);
+List<string> proceed_file(const_string path, const bool increm);
 
-string *proceed_file(string path, bool increm);
+bool check_dir(const_string path);
 
-bool check_dir(string path);
-
-string *Atos(string str, bool increm);
+List<string> Atos(const_string str, bool increm);
 
 bool Atob(string str);
 
-char *split_string(const char *str, char delimiter, int *count);
-
-void get_help_menu(void);
-
-//////////////////////////////////////////////////////////////////////
-void print_next_line();
-
-void println(string msg);
+void get_help_menu();

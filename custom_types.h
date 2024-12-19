@@ -1,9 +1,10 @@
 #pragma once
-typedef const char *string;
+typedef char *string;
+typedef const char *const_string;
 typedef char Color;
 typedef unsigned int counter_v;
-typedef __resharper_unknown_type unknown; //TODO сделать generic
-// typedef _Generic() unknown2;
+template<typename T>
+T unknown;
 #define nil = 0
 #define  red  "\x1b[31m"
 #define   blue  "\x1b[34m"
