@@ -24,7 +24,7 @@ unsigned int stage_count;
 int main(const char *argc, char *argv[]) {
     List<string> args = split_string(*argv, *" ");
     //TODO добавить в аргументы параметр - название игры
-    switch (argc) {
+    switch (*argc) {
         case 1:
             printf("Utility usage:");
             printf("First cli argument is <Test stages>");
@@ -32,13 +32,17 @@ int main(const char *argc, char *argv[]) {
             printf("Third cli argument is <true / false write results to file>");
             print_next_line();
             return 0;
+            break;
         case 3:
             constexpr bool hardcoded_bool_value = false;
             game_tests(args.getElement(1), args.getElement(2));
             get_results(hardcoded_bool_value);
+            break;
         case 4:
             game_tests(args.getElement(1), args.getElement(2));
-            get_results(Atob(args.getElement(3)));
+            // get_results(Atob(args.getElement(3)));
+            get_results(std::atoi(args.getElement(3)));
+            break;
         default:
             printMSG("Given arguments - ", *red);
             printf(argc);
@@ -65,7 +69,7 @@ void game_tests(const_string stages_cli, const string devices_cli) {
 }
 
 void game_stages(const counter_v device_num) {
-    one_test_result stages_result[];
+    List<one_test_result> stages_result;
     print_next_line();
     printMSG(games_list.getElement(device_num), *blue);
     for (counter_v stage = 0; stage < test_stages.getSize(); stage++) {
@@ -73,11 +77,11 @@ void game_stages(const counter_v device_num) {
         printMSG("Enter (yes / 1) for success or (no / 0) for failure or skip to skip", *yellow);
         printMSG(">> ", *green);
         const string res = reverse_scan();
-        stages_result[stage] = one_test_result{};
+        stages_result.setElement(stage, one_test_result{});
         if (res == SUCCESS) {
-            enter_data(stages_result[stage], true, "", std::strcat(test_stages.getElement(stage), SUCCESS));
+            enter_data(stages_result.getElement(stage), true, "", std::strcat(test_stages.getElement(stage), SUCCESS));
         } else if (res == SKIPPED) {
-            enter_data(stages_result[stage], true, "", std::strcat(test_stages.getElement(stage), SKIPPED));
+            enter_data(stages_result.getElement(stage), true, "", std::strcat(test_stages.getElement(stage), SKIPPED));
         } else if (res == FAILURE) {
             string problems;
             printMSG("Напишите, что было не так в тесте: ", *red);
@@ -86,9 +90,11 @@ void game_stages(const counter_v device_num) {
                 printMSG("an error occured in section about something bad in test", *red);
                 return;
             }
-            enter_data(stages_result[stage], false, strcat(test_stages.getElement(stage), FAILURE), problems);
+            enter_data(stages_result.getElement(stage), false, strcat(test_stages.getElement(stage), FAILURE),
+                       problems);
         }
-        all_stages_test_results.getElement(device_num).getElement(stage).set_stages_res(stages_result[stage], stage);
+        all_stages_test_results.getElement(device_num).getElement(stage).set_stages_res(
+            stages_result.getElement(stage), stage);
         //TODO подозрительно
     }
 }
@@ -103,10 +109,10 @@ void get_help_menu() {
     println("\t 4 - Get input cli parameters");
     println("\t 5 - Close menu");
     while (true) {
-        counter_v *option = nullptr;
+        counter_v option = 0;
         printf(">> ");
-        scanf(reinterpret_cast<const char *>(*option));
-        if (isdigit(*option) == true) {
+        scanf("%d", &option);
+        if (isdigit(option) == true) {
             switch (option) {
                 case 1:
                     println("Saving current testing progress");
@@ -148,7 +154,7 @@ void get_help_menu() {
     }
 }
 
-void get_results(const bool is_write_to_file) {
+void get_results(const int is_write_to_file) {
     if (!is_write_to_file) {
         print_results();
     } else {
@@ -163,7 +169,8 @@ void print_results() {
         printf(cReset);
         std::uppercase(reinterpret_cast<std::ios_base &>(*games_list.getElement(game_num)));
         for (counter_v stage = 0; stage < all_stages_test_results.getElement(game_num).getSize(); stage++) {
-            const std::string res = all_stages_test_results.getElement(game_num).getElement(stage).get_stages_res().getElement(stage).get_name();
+            const std::string res = all_stages_test_results.getElement(game_num).getElement(stage).get_stages_res().
+                    getElement(stage).get_name();
 
             printf(blue, strcat("\t", res.c_str()));
         }
@@ -179,7 +186,7 @@ string reverse_scan() {
         printMSG("an error occured in scan game stage result", *red);
         return FAILURE;
     }
-    switch (*user_input) {
+    switch (user_input) {
         case "y":
             return SUCCESS;
         case "n":
@@ -238,25 +245,25 @@ bool check_dir(const_string path) {
     }
 }
 
-/*
-Перевод строки в булево значение
-*/
-bool Atob(const string str) {
-    switch (*str) {
-        case "1":
-        case "True":
-        case "true":
-            return true;
-        case "0":
-        case "False":
-        case "false":
-            return false;
-        default:
-            printMSG("Invalid argument", *red);
-            gracefully_exit();
-            return false;
-    }
-}
+// /*
+// Перевод строки в булево значение
+// */
+// bool Atob(string str) {
+//     switch (str) {
+//         case "1":
+//         case "True":
+//         case "true":
+//             return true;
+//         case "0":
+//         case "False":
+//         case "false":
+//             return false;
+//         default:
+//             printMSG("Invalid argument", *red);
+//             gracefully_exit();
+//             return false;
+//     }
+// }
 
 /*
 Перевод строки в массив
