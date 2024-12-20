@@ -25,7 +25,7 @@ int main(const char *argc, char *argv[]) {
     List<string> args = split_string(*argv, *" ");
     //TODO добавить в аргументы параметр - название игры
     switch (*argc) {
-        case 1:
+        case 1: {
             printf("Utility usage:");
             printf("First cli argument is <Test stages>");
             printf("Second cli argument is <Devices>");
@@ -33,29 +33,36 @@ int main(const char *argc, char *argv[]) {
             print_next_line();
             return 0;
             break;
+            }
         case 3:
+        {
             constexpr bool hardcoded_bool_value = false;
             game_tests(args.getElement(1), args.getElement(2));
             get_results(hardcoded_bool_value);
             break;
+            }
         case 4:
+         {
             game_tests(args.getElement(1), args.getElement(2));
             // get_results(Atob(args.getElement(3)));
             get_results(std::atoi(args.getElement(3)));
             break;
+            }
         default:
+         {
             printMSG("Given arguments - ", *red);
             printf(argc);
             printMSG("Error in arguments", *red);
             gracefully_exit();
+            }
     }
     printf(cReset "Bye");
 }
 
 void game_tests(const_string stages_cli, const string devices_cli) {
     ctime(&start_time);
-    init_string_arr(test_stages, &Atos(stages_cli, false));
-    init_string_arr(games_list, &Atos(devices_cli, true));
+    init_string_arr(test_stages, Atos(stages_cli, false));
+    init_string_arr(games_list, Atos(devices_cli, true));
     if (stage_count != 0) {
         init_array_by(all_stages_test_results, get_empty());
     } else {
@@ -115,9 +122,12 @@ void get_help_menu() {
         if (isdigit(option) == true) {
             switch (option) {
                 case 1:
+                {
                     println("Saving current testing progress");
                     break;
+                    }
                 case 2:
+                {
                     println("Current results are:");
                     counter_v device_num = 0;
                     for (one_device_results _1: all_stages_test_results.getElement(device_num)) {
@@ -131,21 +141,28 @@ void get_help_menu() {
                         device_num++;
                     }
                     break;
+                    }
                 case 3:
+                {
                     println("Utility parameters");
                     println("First param are 'Game stages' (ex. tests that you want to test)");
                     println("Second param are 'Devices' (ex. android, ios, desktop)");
                     println(
                         "Third param is optional, but it point to write tests result to file or not (true \\ false)");
                     continue;
+                    }
                 case 4:
+                {
                     for (string _: test_stages) {
                         printMSG(_, *blue);
                     }
                     break;
+                    }
                 case 5:
+                {
                     println("Bye");
                     break;
+                    }
                 default: break;
             }
         } else {

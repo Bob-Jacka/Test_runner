@@ -113,14 +113,14 @@ public:
         return counter;
     }
 
-    /*
-     * for each inner element print
-     */
-    void foreach(one_test_result *unknown<one_test_result()> &f) {
-        for (counter_v i = 0; i < size(); i++) {
-            f(this->stages_res.getFront());
-        }
-    }
+    // /*
+    //  * for each inner element print
+    //  */
+    // void foreach(one_test_result *unknown<one_test_result()> &f) {
+    //     for (counter_v i = 0; i < size(); i++) {
+    //         f(this->stages_res.getFront());
+    //     }
+    // }
 
     one_device_results &operator=(const char *by) {
         return *this;
@@ -128,11 +128,13 @@ public:
 };
 
 inline one_test_result get_empty() {
-    return one_test_result{
+    one_test_result empt;
+    empt = {
         .pass = false,
         .name = "",
-        .errors_in_test = "",
+        .errors_in_test = ""
     };
+    return empt;
 }
 
 inline void enter_data(one_test_result to_input, const bool is_pass, const string test_name, const string errors) {

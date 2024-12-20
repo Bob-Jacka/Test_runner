@@ -78,37 +78,6 @@ inline void printMSG(const const_string str, const Color clr) {
     printf("\n", *cReset);
 }
 
-inline counter_v str_length_1d(string *array) {
-    counter_v counter = 0;
-    for ([[maybe_unused]] auto &str: array) {
-        counter++;
-    }
-    return counter;
-}
-
-inline counter_v str_length_2d(List<List<string> > array) {
-    counter_v counter = 0;
-    for (string str1: array.getElement(0)) {
-        //TODO возможно проблема с индексом листа
-        //TODO обработка двойного массива
-        for (string str2: array.getElement(0).getElement(0)) {
-            //TODO возможно проблема с индексом листа
-            counter++;
-        }
-        counter++;
-    }
-    return counter;
-}
-
-inline counter_v test_length_1d(List<List<one_device_results> > array) {
-    counter_v counter = 0;
-    for (one_device_results str: array.getElement(0)) {
-        //TODO возможно проблема с индексом листа
-        counter++;
-    }
-    return counter;
-}
-
 inline counter_v test_length_2d(List<List<one_device_results> > array) {
     counter_v counter = 0;
     for (one_device_results str1: array.getElement(0)) {
