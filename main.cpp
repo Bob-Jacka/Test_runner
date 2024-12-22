@@ -2,9 +2,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstring>
-#include "List.h"
-#include <conio.h>
 
+#include "List.h"
 #include "static_funcs.h"
 #include "prototypes.h"
 #include "game_results.h"
@@ -22,7 +21,7 @@ unsigned int devices_count;
 unsigned int stage_count;
 
 int main(const char *argc, char *argv[]) {
-    List<string> args = split_string(*argv, *" ");
+    List<string> args = split_string(get_string_by_chars(*argv), *" ");
     //TODO добавить в аргументы параметр - название игры
     switch (*argc) {
         case 1: {
@@ -32,29 +31,24 @@ int main(const char *argc, char *argv[]) {
             printf("Third cli argument is <true / false write results to file>");
             print_next_line();
             return 0;
-            break;
-            }
-        case 3:
-        {
+        }
+        case 3: {
             constexpr bool hardcoded_bool_value = false;
             game_tests(args.getElement(1), args.getElement(2));
             get_results(hardcoded_bool_value);
             break;
-            }
-        case 4:
-         {
+        }
+        case 4: {
             game_tests(args.getElement(1), args.getElement(2));
-            // get_results(Atob(args.getElement(3)));
-            get_results(std::atoi(args.getElement(3)));
+            get_results(std::stoi(args.getElement(3)));
             break;
-            }
-        default:
-         {
+        }
+        default: {
             printMSG("Given arguments - ", *red);
             printf(argc);
             printMSG("Error in arguments", *red);
             gracefully_exit();
-            }
+        }
     }
     printf(cReset "Bye");
 }
@@ -84,24 +78,26 @@ void game_stages(const counter_v device_num) {
         printMSG("Enter (yes / 1) for success or (no / 0) for failure or skip to skip", *yellow);
         printMSG(">> ", *green);
         const string res = reverse_scan();
+        string problems = "";
         stages_result.setElement(stage, one_test_result{});
         if (res == SUCCESS) {
-            enter_data(stages_result.getElement(stage), true, "", std::strcat(test_stages.getElement(stage), SUCCESS));
+            enter_data(stages_result.getElement(stage), true, (test_stages.getElement(stage).append(SUCCESS)),
+                       problems);
         } else if (res == SKIPPED) {
-            enter_data(stages_result.getElement(stage), true, "", std::strcat(test_stages.getElement(stage), SKIPPED));
+            enter_data(stages_result.getElement(stage), true, (test_stages.getElement(stage).append(SKIPPED)),
+                       problems);
         } else if (res == FAILURE) {
-            string problems;
             printMSG("Напишите, что было не так в тесте: ", *red);
             const counter_v _ = scanf("%s", &problems); //TODO учитывает только одно слово
             if (_ > 0) {
                 printMSG("an error occured in section about something bad in test", *red);
                 return;
             }
-            enter_data(stages_result.getElement(stage), false, strcat(test_stages.getElement(stage), FAILURE),
+            enter_data(stages_result.getElement(stage), false, (test_stages.getElement(stage).append(FAILURE)),
                        problems);
         }
         all_stages_test_results.getElement(device_num).getElement(stage).set_stages_res(
-            stages_result.getElement(stage), stage);
+                stages_result.getElement(stage), stage);
         //TODO подозрительно
     }
 }
@@ -121,49 +117,44 @@ void get_help_menu() {
         scanf("%d", &option);
         if (isdigit(option) == true) {
             switch (option) {
-                case 1:
-                {
+                case 1: {
                     println("Saving current testing progress");
                     break;
-                    }
-                case 2:
-                {
+                }
+                case 2: {
                     println("Current results are:");
                     counter_v device_num = 0;
-                    for (one_device_results _1: all_stages_test_results.getElement(device_num)) {
-                        one_device_results outer_array_game = _1;
-                        counter_v inner_array_test = 0; //TODO может быть ошибка из-за двойного массива
-                        // for (one_test_result _2: outer_array_game) {
-                        //     println(const_cast<string>(_2.name.c_str()));
-                        //     println(reinterpret_cast<string>(_2.pass));
-                        //     println(const_cast<string>(_2.errors_in_test.c_str()));
-                        // }
-                        device_num++;
-                    }
+//                    for (one_device_results _1: all_stages_test_results.getElement(device_num)) {
+//                        one_device_results outer_array_game = _1;
+//                        counter_v inner_array_test = 0; //TODO может быть ошибка из-за двойного массива
+                    // for (one_test_result _2: outer_array_game) {
+                    //     println(const_cast<string>(_2.name.c_str()));
+                    //     println(reinterpret_cast<string>(_2.pass));
+                    //     println(const_cast<string>(_2.errors_in_test.c_str()));
+                    // }
+                    device_num++;
+                }
                     break;
-                    }
-                case 3:
-                {
+                case 3: {
                     println("Utility parameters");
                     println("First param are 'Game stages' (ex. tests that you want to test)");
                     println("Second param are 'Devices' (ex. android, ios, desktop)");
                     println(
-                        "Third param is optional, but it point to write tests result to file or not (true \\ false)");
+                            "Third param is optional, but it point to write tests result to file or not (true \\ false)");
                     continue;
-                    }
-                case 4:
-                {
-                    for (string _: test_stages) {
-                        printMSG(_, *blue);
+                }
+                case 4: {
+                    for (int i = 0; i < test_stages.getSize(); i++) {
+                        printMSG(test_stages.getElement(i), *blue);
                     }
                     break;
-                    }
-                case 5:
-                {
+                }
+                case 5: {
                     println("Bye");
                     break;
-                    }
-                default: break;
+                }
+                default:
+                    break;
             }
         } else {
             println("Invalid argument type");
@@ -197,25 +188,25 @@ void print_results() {
 }
 
 string reverse_scan() {
-    string user_input;
-    const unsigned int _ = scanf("%s", &user_input);
+    int user_input;
+    const unsigned int _ = scanf("%d", &user_input);
     if (_ > 0) {
         printMSG("an error occured in scan game stage result", *red);
         return FAILURE;
     }
     switch (user_input) {
-        case "y":
+        case 1:
             return SUCCESS;
-        case "n":
+        case 0:
             return FAILURE;
-        case "s":
+        case 2:
             return SKIPPED;
-        case "^C":
-            gracefully_exit();
-        case "-h":
-        case "--help":
-            get_help_menu();
-            return nullptr;
+//        case switch_stats::EXIT:
+//            gracefully_exit();
+//        case switch_stats::HELP_short:
+//        case switch_stats::HELP_long:
+//            get_help_menu();
+//            return nullptr;
 
         default:
             printMSG("Invalid argument", *red);
@@ -232,16 +223,19 @@ string reverse_scan() {
 Проверка того, что переданный путь это файл
 */
 bool check_file(const_string path) {
-    FILE *_ = fopen(path, "r");
-    if (_ == nullptr) {
+    std::ifstream in;
+    in.open(path);
+    if (!in.is_open()) {
         printMSG("Error occured in checking file", *red);
         check_dir(path);
-        if (!strstr(path, ".")) {
+        if (path.find(".") == -1) {
+            in.close();
             printMSG("Maybe path is not contains file extension", *red);
         }
         gracefully_exit();
         return false;
     } else {
+        in.close();
         printMSG("File exists", *green);
         return true;
     }
@@ -251,36 +245,19 @@ bool check_file(const_string path) {
 Проверка того, что переданный путь это директория
 */
 bool check_dir(const_string path) {
-    FILE *_ = fopen(path, "r");
-    if (_ != nullptr) {
+    std::ifstream in;
+    in.open(path);
+    if (!in.is_open()) {
         printMSG("Error occured is checking dir", *red);
+        in.close();
         gracefully_exit();
         return false;
     } else {
         printMSG("Dir exists", *yellow);
+        in.close();
         return true;
     }
 }
-
-// /*
-// Перевод строки в булево значение
-// */
-// bool Atob(string str) {
-//     switch (str) {
-//         case "1":
-//         case "True":
-//         case "true":
-//             return true;
-//         case "0":
-//         case "False":
-//         case "false":
-//             return false;
-//         default:
-//             printMSG("Invalid argument", *red);
-//             gracefully_exit();
-//             return false;
-//     }
-// }
 
 /*
 Перевод строки в массив
@@ -290,7 +267,7 @@ List<string> Atos(const_string str, const bool increm) {
         printMSG("Argument is a file", *green);
         return proceed_file(str, increm);
     }
-    if (strstr(str, ",")) {
+    if (str.find(",") == -1) {
         printMSG("using as separator ','", *green);
         List<string> splitted = split_string(str, *",");
         return splitted;
@@ -306,22 +283,20 @@ List<string> Atos(const_string str, const bool increm) {
 Возвращается содержимое файла
 */
 List<string> proceed_file(const_string path, const bool increm) {
-    FILE *file = fopen(path, "r");
-    if (file != nullptr) {
+    std::ifstream in;
+    in.open(path);
+    if (!in.is_open()) {
         printMSG("error ocurred during file open", *red);
-        fclose(file);
         gracefully_exit();
-    }
-
-    std::string fileLine;
-    List<string> fileLines;
-    while (!feof(file)) {
-        fgets(fileLine.data(), 100, file);
-        if (!feof(file)) {
-            puts(fileLine.c_str());
+        return List<string>{};
+    } else {
+        printMSG("Dir exists", *yellow);
+        std::string fileLine;
+        List<string> fileLines;
+        while (std::getline(in, fileLine)) {
             fileLines.addElement(fileLine.data());
         }
+        in.close();
+        return fileLines;
     }
-    fclose(file);
-    return fileLines;
 }

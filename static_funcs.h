@@ -3,12 +3,13 @@
 #include <iostream>
 #include "custom_types.h"
 #include "game_results.h"
-#include <sstream>
+#include <fstream>
 #include <vector>
 #include <list>
 
-counter_v test_length_2d(List<List<one_device_results> > array);
-counter_v test_length_1d(List<List<one_device_results> > array);
+counter_v test_length_2d(List <List<one_device_results>> array);
+
+counter_v test_length_1d(List <List<one_device_results>> array);
 
 inline void println(const_string msg) {
     std::cout << msg;
@@ -24,7 +25,7 @@ inline void gracefully_exit() {
     exit(1);
 }
 
-inline void init_string_arr(List<string> to_which, List<string> from_which[]) {
+inline void init_string_arr(List <string> to_which, List <string> from_which) {
     counter_v counter = 0;
     for (counter_v i = 0; i < to_which.getSize(); i++) {
         string elem = from_which->getElement(i);
@@ -38,12 +39,13 @@ inline void init_string_arr(List<string> to_which, List<string> from_which[]) {
 /*
  * Поддерживается только двойной массив (массив массивов)
  */
-inline void init_array_by(List<List<one_device_results> > to_which, const one_test_result &by) {
+inline void init_array_by(List <List<one_device_results>> to_which, const one_test_result &by) {
     counter_v inner_array = 0;
     counter_v outer_array = 0;
     for (outer_array = 0;
          outer_array < test_length_2d(to_which); outer_array++) {
-        for (inner_array = 0; inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
+        for (inner_array = 0;
+             inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
             //TODO возможно беда из -за индекса
             to_which.getElement(outer_array).getElement(inner_array) = reinterpret_cast<const char *>(&by);
         }
@@ -59,10 +61,10 @@ inline void get_time_stat(const long seconds_time) {
     printf("%d часов\n %d минут\n %d секунд\n", hours, minutes, seconds);
 }
 
-inline List<string> split_string(const char *str, const char delimiter) {
-    List<string> splitted;
+inline List <string> split_string(const_string str, const char delimiter) {
+    List <string> splitted;
     std::istringstream iss(str);
-    std::vector<string> words{std::istringstream<std::string>(iss), std::istringstream<std::string>()};
+    std::vector <string> words{std::istringstream<std::string>(iss), std::istringstream<std::string>()};
     for (string i: words) {
         splitted.addElement(i);
     }
@@ -72,13 +74,13 @@ inline List<string> split_string(const char *str, const char delimiter) {
 /*
 Вывод сообщения независимо от цвета
 */
-inline void printMSG(const const_string str, const Color clr) {
+inline void printMSG(const_string str, const Color clr) {
     printf("\n", *cReset);
     printf(&clr, str, "\n");
     printf("\n", *cReset);
 }
 
-inline counter_v test_length_2d(List<List<one_device_results> > array) {
+inline counter_v test_length_2d(List <List<one_device_results>> array) {
     counter_v counter = 0;
     for (one_device_results str1: array.getElement(0)) {
         //TODO проблема с индексами
@@ -90,10 +92,18 @@ inline counter_v test_length_2d(List<List<one_device_results> > array) {
     return counter;
 }
 
-inline List<one_test_result> init_test_array() {
-    List<one_test_result> device_results;
+inline List <one_test_result> init_test_array() {
+    List <one_test_result> device_results;
     for (counter_v i = 0; i < device_results.getSize(); i++) {
         device_results.setElement(i, get_empty());
     }
     return device_results;
+}
+
+inline std::string get_string_by_chars(char chars[]) {
+    std::string tmp = "";
+    for (int i = 0; i < strlen(chars); i++) {
+        tmp.append(*chars[i]);
+    }
+    return tmp;
 }
