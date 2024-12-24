@@ -9,7 +9,7 @@ class List : public std::list<T> {
 public:
 
     /*
-     получение элемента по его позиции
+     Получение элемента по его позиции
      */
     T getElement(unsigned int index) const {
         T element;
@@ -37,13 +37,13 @@ public:
     void setElement(unsigned int index, T element) {
         if (index >= this->size()) {
             for (unsigned int i = 0; i < index; i++) {
-                this->insert(this->begin(), element); //TODO возможно проблема с insertom
+                this->insert(this->begin(), element);
             }
         }
     }
 
     /*
-     добавление элемента в конец списка
+     Добавление элемента в конец списка
      */
     void addElement(T element) {
         this->insert(this->end(), element);
@@ -65,8 +65,12 @@ public:
         return std::iterator<std::forward_iterator_tag, T>(this->begin(), this->end());
     }
 
-    bool operator!=(const List &) const {
-        return false; //TODO будет ошибка
+    bool operator!=(const List &anotherL) const {
+        return this->getSize() != anotherL->getSize();
+    }
+
+    T operator[](const unsigned int index) const {
+        return this->getElement(index);
     }
 };
 

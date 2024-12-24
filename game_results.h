@@ -107,12 +107,12 @@ public:
 
     one_device_results &operator=(const char *by) {
         return *this;
-    };
+    }
 };
 
 inline one_test_result get_empty() {
-    one_test_result empt = {};
-    return empt;
+    one_test_result empty = {};
+    return empty;
 }
 
 inline void enter_data(one_test_result to_input, const bool is_pass, const string &test_name, const string &errors) {

@@ -7,7 +7,7 @@
 #include <vector>
 #include <list>
 
-counter_v test_length_2d(List<List<one_device_results> > &array);
+counter_v double_size(const List<List<one_device_results> > &double_array);
 
 inline void println(const_string &msg) {
     std::cout << msg;
@@ -23,7 +23,7 @@ inline void gracefully_exit() {
     exit(1);
 }
 
-inline void init_string_arr(List<string> to_which, const List<string>& from_which) {
+inline void init_string_arr(List<string> to_which, const List<string> &from_which) {
     for (counter_v i = 0; i < to_which.getSize(); i++) {
         if (string elem = from_which.getElement(i); !elem.empty()) {
             to_which.setElement(i, elem);
@@ -34,11 +34,11 @@ inline void init_string_arr(List<string> to_which, const List<string>& from_whic
 /*
  * Поддерживается только двойной массив (массив массивов)
  */
-inline void init_array_by(List<List<one_device_results> > to_which, const one_test_result &by) {
+inline void init_array_by(const List<List<one_device_results> >& to_which, const one_test_result &by) {
     counter_v inner_array = 0;
     counter_v outer_array = 0;
     //TODO возможно из за этого ошибка компиляции
-    for (outer_array = 0; outer_array < test_length_2d(to_which); outer_array++) {
+    for (outer_array = 0; outer_array < double_size(to_which); outer_array++) {
         for (inner_array = 0;
              inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
             //TODO возможно беда из -за индекса
@@ -89,22 +89,17 @@ inline List<string> split_string(const_string &str, const char delimiter) {
 /*
 Вывод сообщения независимо от цвета
 */
-inline void printMSG(const_string &str, const Color clr) {
-    printf("\n" cReset);
-    printf(&clr, str, "\n");
-    printf("\n" cReset);
+inline void printMSG(const_string &str) {
+    printf("\n");
+    printf("%s\n", str.c_str());
+    printf("\n");
 }
 
-inline counter_v test_length_2d(List<List<one_device_results> > &array) {
-    counter_v counter = 0;
-    for (one_device_results str1: array.getElement(0)) {
-        //TODO проблема с индексами
-        for (one_device_results str2: array.getElement(0)) {
-            counter++;
-        }
-        counter++;
-    }
-    return counter;
+inline counter_v double_size(const List<List<one_device_results> > &double_array) {
+    counter_v rows = double_array.size(); // Количество строк
+    counter_v cols = double_array.empty() ? 0 : double_array.getElement(0).size(); // Количество столбцов
+    counter_v size = rows + cols;
+    return size;
 }
 
 inline List<one_test_result> init_test_array() {
