@@ -3,19 +3,62 @@
 #include <iostream>
 #include "custom_types.h"
 #include "game_results.h"
-#include <fstream>
-#include <vector>
 #include <list>
+#include "termcolor.hpp"
 
 counter_v double_size(const List<List<one_device_results> > &double_array);
 
+/*
+ *Prints new line with message
+ */
 inline void println(const_string &msg) {
-    std::cout << msg;
+    std::cout << termcolor::bright_white << msg;
     std::cout << "\n";
 }
 
-inline void print_next_line() {
+/*
+ *Prints new line with bool message
+ */
+inline void println(const bool &msg) {
+    std::cout << termcolor::bright_white << msg;
     std::cout << "\n";
+}
+
+/*
+ *Print new line
+ */
+inline void println() {
+    std::cout << "\n";
+}
+
+inline void println_important(const_string &msg) {
+    std::cout << termcolor::bright_cyan << termcolor::bold << msg;
+    std::cout << "\n";
+}
+
+/*
+ *Print new line and red error message
+ */
+inline void println_error(const_string &msg) {
+    std::cout << termcolor::bright_red << msg;
+    std::cout << "\n";
+}
+
+/*
+ *Print new line and white info message
+ */
+inline void println_info(const_string &msg) {
+    std::cout << termcolor::bright_white << msg;
+    std::cout << "\n";
+}
+
+/*
+Вывод сообщения независимо от цвета
+*/
+inline void printMSG(const_string &str) {
+    std::cout << termcolor::reset;
+    std::cout << str << "\n";
+    std::cout << termcolor::reset;
 }
 
 inline void gracefully_exit() {
@@ -34,7 +77,7 @@ inline void init_string_arr(List<string> to_which, const List<string> &from_whic
 /*
  * Поддерживается только двойной массив (массив массивов)
  */
-inline void init_array_by(const List<List<one_device_results> >& to_which, const one_test_result &by) {
+inline void init_array_by(const List<List<one_device_results> > &to_which, const one_test_result &by) {
     counter_v inner_array = 0;
     counter_v outer_array = 0;
     //TODO возможно из за этого ошибка компиляции
@@ -84,15 +127,6 @@ inline List<string> split_string(const_string &str, const char delimiter) {
         }
     }
     return splitted;
-}
-
-/*
-Вывод сообщения независимо от цвета
-*/
-inline void printMSG(const_string &str) {
-    printf("\n");
-    printf("%s\n", str.c_str());
-    printf("\n");
 }
 
 inline counter_v double_size(const List<List<one_device_results> > &double_array) {
