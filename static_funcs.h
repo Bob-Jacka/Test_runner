@@ -1,12 +1,37 @@
 #pragma once
 
+#include <fstream>
 #include <iostream>
 #include "custom_types.h"
 #include "game_results.h"
-#include <list>
 #include "termcolor.hpp"
 
 counter_v double_size(const List<List<one_device_results> > &double_array);
+
+List<string> proceed_file(const_string &path);
+
+bool check_dir(const_string &path);
+
+void printMSG(const_string &str);
+
+inline string input() {
+    printMSG(">> ");
+    string input;
+    std::istream &is = std::cin;
+    std::getline(is, input);
+    return input;
+}
+
+inline int input_int() {
+    printMSG(">> ");
+    string input;
+    std::istream &is = std::cin;
+    std::getline(is, input);
+    if (const int integer = std::stoi(input); isdigit(integer) == true) {
+        return integer;
+    }
+    return -1;
+}
 
 /*
  *Prints new line with message
@@ -80,7 +105,6 @@ inline void init_string_arr(List<string> to_which, const List<string> &from_whic
 inline void init_array_by(const List<List<one_device_results> > &to_which, const one_test_result &by) {
     counter_v inner_array = 0;
     counter_v outer_array = 0;
-    //TODO возможно из за этого ошибка компиляции
     for (outer_array = 0; outer_array < double_size(to_which); outer_array++) {
         for (inner_array = 0;
              inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
@@ -150,4 +174,90 @@ inline std::string get_string_by_chars(char chars[]) {
         tmp.append(&chars[i]);
     }
     return tmp;
+}
+
+/*
+Проверка того, что переданный путь это файл
+*/
+inline bool check_file(const_string &path) {
+    std::ifstream in;
+    in.open(path);
+    if (in.is_open()) {
+        in.close();
+        println_info("File exists");
+        return true;
+    }
+    println_error("Error occurred in checking file");
+    check_dir(path);
+    if (path.find('.') == -1) {
+        in.close();
+        println_error("Maybe path is not contains file extension");
+    }
+    gracefully_exit();
+    return false;
+}
+
+/*
+Проверка того, что переданный путь это директория
+*/
+inline bool check_dir(const_string &path) {
+    std::ifstream in;
+    in.open(path);
+    if (in.is_open()) {
+        println_info("Dir exists");
+        in.close();
+        return true;
+    }
+    println_error("Error occurred is checking dir");
+    in.close();
+    gracefully_exit();
+    return false;
+}
+
+/*
+Перевод строки в массив
+*/
+inline List<string> Atos(const_string &str) {
+    if (check_file(str)) {
+        println_info("Argument is a file");
+        return proceed_file(str);
+    }
+    if (str.find(',') == -1) {
+        println_info("using as separator ','");
+        List<string> strings = split_string(str, *",");
+        return strings;
+    }
+    println_info("using as separator ' ' *whitespace");
+    List<string> strings = split_string(str, *" ");
+    return strings;
+}
+
+/*
+Функция выполняет открытие файла и читает его содержимое (построчно)
+Возвращается содержимое файла
+*/
+inline List<string> proceed_file(const_string &path) {
+    std::ifstream in;
+    in.open(path);
+    if (!in.is_open()) {
+        println_error("error occurred during file open");
+        gracefully_exit();
+        return List<string>{};
+    }
+    printMSG("Dir exists");
+    std::string fileLine;
+    List<string> fileLines;
+    while (std::getline(in, fileLine)) {
+        if (fileLine != "\n") {
+            if (!fileLine.starts_with(ignore_test)) {
+                fileLines.addElement(fileLine);
+            }
+            if (fileLine.starts_with(another_suit)) {
+                println_info("Another suit detected");
+                // fileLines.addElement(proceed_file(fileLine));
+            }
+        }
+    }
+    in.close();
+    return fileLines;
 }

@@ -47,8 +47,6 @@ public:
     }
 };
 
-one_test_result get_empty(); //static function's prototype
-
 /*
  * type that define game results
  */
