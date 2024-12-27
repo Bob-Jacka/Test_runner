@@ -1,11 +1,11 @@
 #include "List.h"
-#include "static_funcs.h"
 #include "Game_results.h"
+#include "inline_funcs.h"
 #include "input_statements.h"
 
-void game_stages(unsigned int device_num);
+void stages(counter_v device_num);
 
-void game_tests(const_string &stages_cli, const string &devices_cli);
+void tests(const_string &stages_cli, const string &devices_cli);
 
 string reverse_scan();
 
@@ -15,38 +15,35 @@ void print_results();
 
 [[noreturn]] void get_help_menu();
 
-List<List<one_device_results> > all_stages_test_results;
 //|First array| - game, |Second array| - each game test results
+List<List<one_device_results> > all_stages_test_results;
 
 List<string> test_stages;
-List<string> games_list;
+List<string> devices_list;
 
 time_t start_time;
 time_t end_time;
 
-counter_v devices_count;
 counter_v stage_count;
 
 int main(const int argc, char *argv[]) {
-    const List<string> args = split_string(get_string_by_chars(*argv), *" ");
+    const List<string> params = split_string(get_string_by_chars(*argv), *" ");
     switch (argc) {
         case 1: {
-            println_info("Utility usage:");
+            println_important("Utility usage:");
             println_info("First cli argument is <Test stages>");
             println_info("Second cli argument is <Devices>");
             println_info("Third cli argument is <true / false write results to file>");
-            println();
             return 0;
         }
         case 3: {
-            constexpr bool hardcoded_bool_value = false;
-            game_tests(args.getElement(1), args.getElement(2));
-            get_results(hardcoded_bool_value);
+            tests(params.getElement(1), params.getElement(2));
+            get_results(false);
             break;
         }
         case 4: {
-            game_tests(args.getElement(1), args.getElement(2));
-            get_results(std::stoi(args.getElement(3)));
+            tests(params.getElement(1), params.getElement(2));
+            get_results(std::stoi(params.getElement(3)));
             break;
         }
         default: {
@@ -57,45 +54,44 @@ int main(const int argc, char *argv[]) {
     println("Bye");
 }
 
-void game_tests(const_string &stages_cli, const_string &devices_cli) {
+void tests(const_string &stages_cli, const_string &devices_cli) {
     ctime(&start_time);
     init_string_arr(test_stages, Atos(stages_cli));
-    init_string_arr(games_list, Atos(devices_cli));
+    init_string_arr(devices_list, Atos(devices_cli));
     if (stage_count != 0) {
         init_array_by(all_stages_test_results, get_empty());
     } else {
         println_error("An error occurred in making array test_results");
         gracefully_exit();
     }
-    for (counter_v device_num = 0; device_num < games_list.getSize(); device_num++) {
-        game_stages(device_num);
+    for (counter_v device_num = 0; device_num < devices_list.getSize(); device_num++) {
+        stages(device_num);
     }
     ctime(&end_time);
 }
 
-void game_stages(const counter_v device_num) {
+void stages(const counter_v device_num) {
     List<one_test_result> stages_result;
     println();
-    println_important(games_list.getElement(device_num));
+    println_important(devices_list.getElement(device_num));
     for (counter_v stage = 0; stage < test_stages.getSize(); stage++) {
         to_upper(test_stages.getElement(stage));
-        printMSG("Enter (yes / 1) for success or (no / 0) for failure or skip to skip");
         const_string res = reverse_scan();
         string problems;
         stages_result.setElement(stage, {});
-        if (res == input_statements.SUCCESS) {
+        if (res == TEST_SUCCESS) {
             enter_data(stages_result.getElement(stage), true,
-                       test_stages.getElement(stage).append(input_statements.SUCCESS),
+                       test_stages.getElement(stage).append(TEST_SUCCESS),
                        problems);
-        } else if (res == input_statements.SKIPPED) {
+        } else if (res == TEST_SKIPPED) {
             enter_data(stages_result.getElement(stage), true,
-                       test_stages.getElement(stage).append(input_statements.SKIPPED),
+                       test_stages.getElement(stage).append(TEST_SKIPPED),
                        problems);
-        } else if (res == input_statements.FAILURE) {
+        } else if (res == TEST_FAILURE) {
             printMSG("Write down what was wrong: ");
             problems = input();
             enter_data(stages_result.getElement(stage), false,
-                       test_stages.getElement(stage).append(input_statements.FAILURE),
+                       test_stages.getElement(stage).append(TEST_FAILURE),
                        problems);
         }
         all_stages_test_results.getElement(device_num).getElement(stage).set_stages_res(
@@ -116,22 +112,7 @@ void game_stages(const counter_v device_num) {
         counter_v option = input_int();
         switch (option) {
             case 1: {
-                time_t timestamp;
-                println_info("Saving current testing progress");
-                println("Enter stage");
-                const_string save_point_stages = input();
-                println("Enter device");
-                const_string save_point_device = input();
-                ctime(&timestamp);
-                string save_path = strcat(input_statements.save_file_name + timestamp, ".txt");
-                std::ofstream out(save_path, std::ios::app);
-                if (out.is_open()) {
-                    out << save_point_stages << std::endl;
-                    out << save_point_device << std::endl;
-                } else {
-                    println_error("Failed to open save file");
-                }
-                out.close();
+                save_results(false);
                 break;
             }
             case 2: {
@@ -171,7 +152,6 @@ void game_stages(const counter_v device_num) {
                 break;
             }
             case 5: {
-                println("Bye");
                 break;
             }
             default:
@@ -185,7 +165,7 @@ void get_results(const int is_write_to_file) {
         print_results();
     } else {
         printMSG("Saving in file");
-        // write_to_file();
+        save_results(true);
     }
 }
 
@@ -193,7 +173,7 @@ void print_results() {
     println();
     for (counter_v game_num = 0; game_num < double_size(all_stages_test_results); game_num++) {
         println();
-        to_upper(games_list.getElement(game_num));
+        to_upper(devices_list.getElement(game_num));
         for (counter_v stage = 0; stage < all_stages_test_results.getElement(game_num).getSize(); stage++) {
             const std::string res = all_stages_test_results.getElement(game_num).getElement(stage).get_stages_res().
                     getElement(stage).get_name();
@@ -205,20 +185,21 @@ void print_results() {
 }
 
 string reverse_scan() {
+    printMSG(EVERY_TEST_MESSAGE);
     const_string user_input = input();
-    if (user_input == input_statements.yes || user_input == input_statements.one) {
-        return input_statements.SUCCESS;
+    if (user_input == SKIP_CHOICE) {
+        return TEST_SKIPPED;
     }
-    if (user_input == input_statements.no || user_input == input_statements.zero) {
-        return input_statements.FAILURE;
+    if (user_input == FIRST_PASS_CHOICE || user_input == SECOND_PASS_CHOICE) {
+        return TEST_SUCCESS;
     }
-    if (user_input == input_statements.skip) {
-        return input_statements.SKIPPED;
+    if (user_input == FIRST_FAILURE_CHOICE || user_input == SECOND_FAILURE_CHOICE) {
+        return TEST_FAILURE;
     }
-    if (user_input == input_statements.EXIT) {
+    if (user_input == EXIT) {
         gracefully_exit();
     }
-    if (user_input == input_statements.short_help || user_input == input_statements.long_help) {
+    if (user_input == SHORT_FLAG_CHOICE || user_input == LONG_FLAG_CHOICE) {
         get_help_menu();
     }
     println_error("Please, try again");

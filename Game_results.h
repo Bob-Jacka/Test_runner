@@ -1,4 +1,5 @@
 #pragma once
+#include "custom_types.h"
 
 /*
 * inner array in game results representing one test result
@@ -51,7 +52,6 @@ public:
  * type that define game results
  */
 class one_device_results {
-
     std::string game_name;
     std::string platform_name;
     List<one_test_result> stages_res;
@@ -112,8 +112,8 @@ inline one_test_result get_empty() {
     return empty;
 }
 
-inline void enter_data(one_test_result to_input, const bool is_pass, const string &test_name, const string &errors) {
+inline void enter_data(one_test_result to_input, const bool is_pass, const string &test_name, const string &problems_in_test) {
     to_input.set_pass(is_pass);
     to_input.set_game_name(test_name);
-    to_input.set_errors_in_test(errors);
+    to_input.set_errors_in_test(problems_in_test);
 }

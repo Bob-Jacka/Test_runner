@@ -16,7 +16,7 @@ bool check_dir(const_string &path);
 void printMSG(const_string &str);
 
 inline string input() {
-    printMSG(">> ");
+    printMSG(INPUT_CURSOR);
     string input;
     std::istream &is = std::cin;
     std::getline(is, input);
@@ -24,7 +24,7 @@ inline string input() {
 }
 
 inline int input_int() {
-    printMSG(">> ");
+    printMSG(INPUT_CURSOR);
     string input;
     std::istream &is = std::cin;
     std::getline(is, input);
@@ -38,44 +38,44 @@ inline int input_int() {
  *Prints new line with message
  */
 inline void println(const_string &msg) {
-    std::cout << termcolor::bright_white << msg;
-    std::cout << "\n";
+    std::cout << termcolor::bright_white << msg << termcolor::reset;
+    std::cout << NEW_LINE;
 }
 
 /*
  *Prints new line with bool message
  */
 inline void println(const bool &msg) {
-    std::cout << termcolor::bright_white << msg;
-    std::cout << "\n";
+    std::cout << termcolor::bright_white << msg << termcolor::reset;
+    std::cout << NEW_LINE;
 }
 
 /*
  *Print new line
  */
 inline void println() {
-    std::cout << "\n";
+    std::cout << NEW_LINE;
 }
 
 inline void println_important(const_string &msg) {
-    std::cout << termcolor::bright_cyan << termcolor::bold << msg;
-    std::cout << "\n";
+    std::cout << termcolor::bright_cyan << termcolor::underline << msg << termcolor::reset;
+    std::cout << NEW_LINE;
 }
 
 /*
  *Print new line and red error message
  */
 inline void println_error(const_string &msg) {
-    std::cout << termcolor::bright_red << msg;
-    std::cout << "\n";
+    std::cout << termcolor::bright_red << msg << termcolor::reset;
+    std::cout << NEW_LINE;
 }
 
 /*
  *Print new line and white info message
  */
 inline void println_info(const_string &msg) {
-    std::cout << termcolor::bright_white << msg;
-    std::cout << "\n";
+    std::cout << termcolor::blue << msg << termcolor::reset;
+    std::cout << NEW_LINE;
 }
 
 /*
@@ -83,7 +83,7 @@ inline void println_info(const_string &msg) {
 */
 inline void printMSG(const_string &str) {
     std::cout << termcolor::reset;
-    std::cout << str << "\n";
+    std::cout << str << NEW_LINE;
     std::cout << termcolor::reset;
 }
 
@@ -120,7 +120,9 @@ inline void get_time_stat(const unsigned long seconds_time) {
     const counter_v seconds = seconds_time % 60 != 0 ? seconds_time % 60 : 0;
     const counter_v minutes = seconds / 60;
     const counter_v hours = minutes > 60 ? minutes / 60 : 0;
-    printf("%d часов\n%d минут\n%d секунд\n", hours, minutes, seconds);
+    printf("%d часов ", hours);
+    printf("n%d минут ", minutes);
+    printf("n%d секунд", seconds);
 }
 
 inline List<string> split_string(const_string &str, const char &delimiter) {
@@ -243,11 +245,11 @@ inline List<List<string> > proceed_suit(const_string &path) {
     List<string> test_suit;
     List<List<string> > all_suit;
     while (std::getline(in, fileLine)) {
-        if (fileLine != "\n") {
-            if (!fileLine.starts_with(ignore_test)) {
+        if (fileLine != NEW_LINE) {
+            if (!fileLine.starts_with(IGNORE_TEST)) {
                 test_suit.addElement(fileLine);
             }
-            if (fileLine.starts_with(another_suit)) {
+            if (fileLine.starts_with(ANOTHER_SUIT)) {
                 println_info("Another suit detected");
                 test_suit = proceed_internal_suit(fileLine);
             }
@@ -269,8 +271,8 @@ inline List<string> proceed_internal_suit(const_string &path) {
     std::string fileLine;
     List<string> test_suit;
     while (std::getline(in, fileLine)) {
-        if (fileLine != "\n") {
-            if (!fileLine.starts_with(ignore_test)) {
+        if (fileLine != NEW_LINE) {
+            if (!fileLine.starts_with(IGNORE_TEST)) {
                 test_suit.addElement(fileLine);
             }
         }
@@ -287,4 +289,30 @@ inline List<string> proceed_double_array(const List<List<string> > &d_array) {
         }
     }
     return test_suit;
+}
+
+/*
+ bool value end_testing_save - параметр, обозначающий в какой период будет сохранение (просто для разделения логики в функции)
+ */
+inline void save_results(const bool end_testing_save) {
+    time_t timestamp;
+    ctime(&timestamp);
+    if (end_testing_save) {
+        //
+    } else {
+        println_info("Saving current testing progress");
+        println("Enter stage");
+        const_string save_point_stages = input();
+        println("Enter device");
+        const_string save_point_device = input();
+        const string save_path = strcat(save_file_name + timestamp, save_ext);
+        std::ofstream out(save_path, std::ios::app);
+        if (out.is_open()) {
+            out << save_point_stages << std::endl;
+            out << save_point_device << std::endl;
+        } else {
+            println_error("Failed to open save file");
+        }
+        out.close();
+    }
 }

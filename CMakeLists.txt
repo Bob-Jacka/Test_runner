@@ -8,7 +8,7 @@ add_executable(
         main.cpp
         game_results.h
         custom_types.h
-        static_funcs.h
+        inline_funcs.h
         List.h
         Input_statements.h
 )

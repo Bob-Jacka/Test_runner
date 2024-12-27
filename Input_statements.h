@@ -1,36 +1,49 @@
 #ifndef INPUT_STATEMENTS_H
 #define INPUT_STATEMENTS_H
-#include "custom_types.h"
 
-struct statements {
-    const_string yes = "yes";
-    const_string no = "no";
+// pass
+#define FIRST_PASS_CHOICE "yes"
+#define SECOND_PASS_CHOICE "1"
 
-    const_string one = "1";
-    const_string zero = "0";
+// no pass
+#define FIRST_FAILURE_CHOICE "no"
+#define SECOND_FAILURE_CHOICE "0"
 
-    const_string skip = "skip";
+// skip test
+#define SKIP_CHOICE "skip"
 
-    const_string long_help = "--help";
-    const_string short_help = "-h";
+// help flag
+#define LONG_FLAG_CHOICE "--help"
+#define SHORT_FLAG_CHOICE "-h"
 
-    const_string SUCCESS = "No error";
-    const_string FAILURE = "Failure";
-    const_string SKIPPED = "Skipped";
+//Test statements
+#define TEST_SUCCESS "No error"
+#define TEST_FAILURE "Failure"
+#define TEST_SKIPPED "Skipped"
 
-    char *save_file_name = "save-point";
+//Program settings
+inline char *save_file_name = "save-point";
+inline char *save_ext = ".txt";
 
-#ifdef WIN32 || WIN64
-    const_string EXIT = "^C";
+// System defined exit symbol
+#if defined(_WIN32) || defined(_WIN64)
+    #define EXIT "^C"
+    #define NEW_LINE "\r\n"
+#elif defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__))
+    #define EXIT "^D"
+    #define NEW_LINE "\n"
 #endif
 
-#ifdef LINUX
-        const_string EXIT = "^D";
-#endif
-};
+//Line in test suit file will be ignored if it starts with this symbol
+#define IGNORE_TEST "*"
 
-static statements input_statements;
-#define ignore_test "*" //Line in test suit file will be ignored if it starts with this symbol
-#define another_suit "$" //Line in file will be interpreted like test suit with this symbol at start
+//Line in file will be interpreted like test suit with this symbol at start
+#define ANOTHER_SUIT "$"
+
+//Cursor that displays every string or int input
+#define INPUT_CURSOR ">> "
+
+//Message that displays before every test case
+#define EVERY_TEST_MESSAGE "Enter (yes / 1) for success or (no / 0) for failure or skip to skip, -h for help"
 
 #endif //INPUT_STATEMENTS_H

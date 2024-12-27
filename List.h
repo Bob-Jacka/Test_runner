@@ -72,6 +72,10 @@ public:
     T operator[](const unsigned int index) const {
         return this->getElement(index);
     }
+
+    bool operator==(const List &anotherL) const {
+        return this->getSize() == anotherL->getSize();
+    }
 };
 
 inline std::string to_upper(const std::string &str) {
