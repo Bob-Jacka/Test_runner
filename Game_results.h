@@ -51,7 +51,6 @@ public:
  * type that define game results
  */
 class one_device_results {
-private:
 
     std::string game_name;
     std::string platform_name;

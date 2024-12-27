@@ -3,12 +3,13 @@
 #include <fstream>
 #include <iostream>
 #include "custom_types.h"
-#include "game_results.h"
+#include "Game_results.h"
+#include "input_statements.h"
 #include "termcolor.hpp"
 
 counter_v double_size(const List<List<one_device_results> > &double_array);
 
-List<string> proceed_file(const_string &path);
+List<List<string> > proceed_suit(const_string &path);
 
 bool check_dir(const_string &path);
 
@@ -88,7 +89,7 @@ inline void printMSG(const_string &str) {
 
 inline void gracefully_exit() {
     println("Exiting...");
-    exit(1);
+    exit(0);
 }
 
 inline void init_string_arr(List<string> to_which, const List<string> &from_which) {
@@ -108,22 +109,21 @@ inline void init_array_by(const List<List<one_device_results> > &to_which, const
     for (outer_array = 0; outer_array < double_size(to_which); outer_array++) {
         for (inner_array = 0;
              inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
-            //TODO возможно беда из -за индекса
             to_which.getElement(outer_array).getElement(inner_array) = reinterpret_cast<const char *>(&by);
         }
     }
 }
 
 inline void get_time_stat(const unsigned long seconds_time) {
-    println("Отчет по тестированию");
-    println("На тестирование ушло");
-    counter_v minutes = seconds_time / 60;
-    counter_v hours = minutes > 60 ? minutes / 60 : 0;
-    counter_v seconds = 0; //TODO дописать секунды
-    printf("%d часов\n %d минут\n %d секунд\n", hours, minutes, seconds);
+    println_important("Отчет по тестированию");
+    println("На тестирование ушло:");
+    const counter_v seconds = seconds_time % 60 != 0 ? seconds_time % 60 : 0;
+    const counter_v minutes = seconds / 60;
+    const counter_v hours = minutes > 60 ? minutes / 60 : 0;
+    printf("%d часов\n%d минут\n%d секунд\n", hours, minutes, seconds);
 }
 
-inline List<string> split_string(const_string &str, const char delimiter) {
+inline List<string> split_string(const_string &str, const char &delimiter) {
     if (str.empty()) {
         println("Empty string");
         return {};
@@ -145,31 +145,22 @@ inline List<string> split_string(const_string &str, const char delimiter) {
             index_start = cur_pos + 1;
             index_end = words.find(delimiter, cur_pos + 1);
 
-            string word = words.substr(index_start, index_end);
+            const string word = words.substr(index_start, index_end);
             splitted.addElement(word);
-            word = "";
         }
     }
     return splitted;
 }
 
 inline counter_v double_size(const List<List<one_device_results> > &double_array) {
-    counter_v rows = double_array.size(); // Количество строк
-    counter_v cols = double_array.empty() ? 0 : double_array.getElement(0).size(); // Количество столбцов
-    counter_v size = rows + cols;
+    const counter_v rows = double_array.size(); // Количество строк
+    const counter_v cols = double_array.empty() ? 0 : double_array.getElement(0).size(); // Количество столбцов
+    const counter_v size = rows + cols;
     return size;
 }
 
-inline List<one_test_result> init_test_array() {
-    List<one_test_result> device_results;
-    for (counter_v i = 0; i < device_results.getSize(); i++) {
-        device_results.setElement(i, get_empty());
-    }
-    return device_results;
-}
-
-inline std::string get_string_by_chars(char chars[]) {
-    std::string tmp;
+inline string get_string_by_chars(char chars[]) {
+    string tmp;
     for (int i = 0; i < strlen(chars); i++) {
         tmp.append(&chars[i]);
     }
@@ -214,13 +205,15 @@ inline bool check_dir(const_string &path) {
     return false;
 }
 
+List<string> proceed_double_array(const List<List<string> > &d_array);
+
 /*
 Перевод строки в массив
 */
 inline List<string> Atos(const_string &str) {
     if (check_file(str)) {
         println_info("Argument is a file");
-        return proceed_file(str);
+        return proceed_double_array(proceed_suit(str));
     }
     if (str.find(',') == -1) {
         println_info("using as separator ','");
@@ -232,11 +225,40 @@ inline List<string> Atos(const_string &str) {
     return strings;
 }
 
+List<string> proceed_internal_suit(const_string &path);
+
 /*
-Функция выполняет открытие файла и читает его содержимое (построчно)
+Функция выполняет открытие файла набора тестов и читает его содержимое (построчно)
 Возвращается содержимое файла
 */
-inline List<string> proceed_file(const_string &path) {
+inline List<List<string> > proceed_suit(const_string &path) {
+    std::ifstream in;
+    in.open(path);
+    if (!in.is_open()) {
+        println_error("error occurred during open suit file");
+        gracefully_exit();
+        return List<List<string> >{};
+    }
+    std::string fileLine;
+    List<string> test_suit;
+    List<List<string> > all_suit;
+    while (std::getline(in, fileLine)) {
+        if (fileLine != "\n") {
+            if (!fileLine.starts_with(ignore_test)) {
+                test_suit.addElement(fileLine);
+            }
+            if (fileLine.starts_with(another_suit)) {
+                println_info("Another suit detected");
+                test_suit = proceed_internal_suit(fileLine);
+            }
+        }
+        all_suit.addElement(test_suit);
+    }
+    in.close();
+    return all_suit;
+}
+
+inline List<string> proceed_internal_suit(const_string &path) {
     std::ifstream in;
     in.open(path);
     if (!in.is_open()) {
@@ -244,20 +266,25 @@ inline List<string> proceed_file(const_string &path) {
         gracefully_exit();
         return List<string>{};
     }
-    printMSG("Dir exists");
     std::string fileLine;
-    List<string> fileLines;
+    List<string> test_suit;
     while (std::getline(in, fileLine)) {
         if (fileLine != "\n") {
             if (!fileLine.starts_with(ignore_test)) {
-                fileLines.addElement(fileLine);
-            }
-            if (fileLine.starts_with(another_suit)) {
-                println_info("Another suit detected");
-                // fileLines.addElement(proceed_file(fileLine));
+                test_suit.addElement(fileLine);
             }
         }
     }
     in.close();
-    return fileLines;
+    return test_suit;
+}
+
+inline List<string> proceed_double_array(const List<List<string> > &d_array) {
+    List<string> test_suit;
+    for (const auto &outer: d_array) {
+        for (const auto &inner: outer) {
+            test_suit.addElement(inner);
+        }
+    }
+    return test_suit;
 }

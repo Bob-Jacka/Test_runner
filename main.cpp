@@ -1,6 +1,6 @@
 #include "List.h"
 #include "static_funcs.h"
-#include "game_results.h"
+#include "Game_results.h"
 #include "input_statements.h"
 
 void game_stages(unsigned int device_num);
@@ -116,26 +116,40 @@ void game_stages(const counter_v device_num) {
         counter_v option = input_int();
         switch (option) {
             case 1: {
+                time_t timestamp;
                 println_info("Saving current testing progress");
+                println("Enter stage");
+                const_string save_point_stages = input();
+                println("Enter device");
+                const_string save_point_device = input();
+                ctime(&timestamp);
+                string save_path = strcat(input_statements.save_file_name + timestamp, ".txt");
+                std::ofstream out(save_path, std::ios::app);
+                if (out.is_open()) {
+                    out << save_point_stages << std::endl;
+                    out << save_point_device << std::endl;
+                } else {
+                    println_error("Failed to open save file");
+                }
+                out.close();
                 break;
             }
             case 2: {
-                println_info("Current results are:");
-                counter_v device_num = 0;
-                for (const one_device_results& _1: all_stages_test_results.getElement(device_num)) {
-                    one_device_results outer_array_game = _1;
-                    counter_v inner_array_test = 0; //TODO maybe error because double array
-                    for (one_test_result _2: outer_array_game) {
-                        println(_2.get_name().c_str());
-                        println(_2.get_pass());
-                        println(_2.get_errors_in_test().c_str());
+                println_important("Current results are:");
+                for (const auto &outer: all_stages_test_results) {
+                    for (auto inner: outer) {
+                        for (int i = 0; i < test_stages.getSize(); i++) {
+                            auto test = inner.get_stages_res().getElement(i);
+                            println("Test name: " + test.get_name());
+                            println("Test status: " + test.get_pass());
+                            println("Test errors / notes: " + test.get_errors_in_test());
+                        }
                     }
-                    device_num++;
                 }
             }
             break;
             case 3: {
-                println_info("Utility parameters");
+                println_important("Utility parameters");
                 println_info("First param are 'Game stages' (ex. tests that you want to test)");
                 println_info("Second param are 'Devices' (ex. android, ios, desktop)");
                 println_info(
@@ -146,12 +160,13 @@ void game_stages(const counter_v device_num) {
                 println_info("2. if you want to ignore some tests - enter '*' at test start");
                 println_info(
                     "3. if you want to add another test suit in this test suit you need to add '$' at string start line");
-                println_info("4. Enter 'problem' word if you want to enter something even if test is passed");
+                println_info("4. Do not include test suit in test suit in test suit");
                 continue;
             }
             case 4: {
-                for (int i = 0; i < test_stages.getSize(); i++) {
-                    printMSG(test_stages.getElement(i));
+                println_important("Test suit:");
+                for (const auto &inner: test_stages) {
+                    println(inner);
                 }
                 break;
             }
