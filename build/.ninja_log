@@ -1,0 +1,7 @@
+# ninja log v6
+2	162	1735826178742580424	CMakeFiles/Test_runner.dir/main.cpp.o.ddi	f81b92ae1346c809
+162	170	1735826178905916082	CMakeFiles/Test_runner.dir/CXX.dd	9633f37e920af28f
+162	170	1735826178905916082	/home/kirill/Downloads/Test_runner/build/CMakeFiles/Test_runner.dir/CXXModules.json	9633f37e920af28f
+162	170	1735826178905916082	CMakeFiles/Test_runner.dir/main.cpp.o.modmap	9633f37e920af28f
+171	2137	1735826178912582843	CMakeFiles/Test_runner.dir/main.cpp.o	6ef491b48ddd2b14
+2138	2240	1735826180879277497	Test_runner	a2c9afbd803af086

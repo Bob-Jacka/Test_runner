@@ -1,18 +1,13 @@
 #include "List.h"
 #include "Game_results.h"
-#include "inline_funcs.h"
-#include "input_statements.h"
+#include "Inline_funcs.h"
+#include "Input_statements.h"
 
 void stages(counter_v device_num);
-
 void tests(const_string &stages_cli, const string &devices_cli);
-
 string reverse_scan();
-
 void get_results(int is_write_to_file);
-
 void print_results();
-
 [[noreturn]] void get_help_menu();
 
 //|First array| - game, |Second array| - each game test results
@@ -33,8 +28,8 @@ int main(const int argc, char *argv[]) {
             println_important("Utility usage:");
             println_info("First cli argument is <Test stages>");
             println_info("Second cli argument is <Devices>");
-            println_info("Third cli argument is <true / false write results to file>");
-            return 0;
+            println_info("Third cli argument is <true / false write results to file> (optional)");
+            break;
         }
         case 3: {
             tests(params.getElement(1), params.getElement(2));

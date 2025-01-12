@@ -1,0 +1,3 @@
+/home/kirill/Downloads/Test_runner/build/CMakeFiles/Test_runner.dir
+/home/kirill/Downloads/Test_runner/build/CMakeFiles/edit_cache.dir
+/home/kirill/Downloads/Test_runner/build/CMakeFiles/rebuild_cache.dir

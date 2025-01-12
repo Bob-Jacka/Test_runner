@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/kirill/Downloads/Test_runner/build",
+  "command": "/usr/bin/g++ -g -std=gnu++23 -fmodules-ts -fmodule-mapper=CMakeFiles/Test_runner.dir/main.cpp.o.modmap -MD -fdeps-format=p1689r5 -x c++ -o CMakeFiles/Test_runner.dir/main.cpp.o -c /home/kirill/Downloads/Test_runner/main.cpp",
+  "file": "/home/kirill/Downloads/Test_runner/main.cpp",
+  "output": "CMakeFiles/Test_runner.dir/main.cpp.o"
+}
+]

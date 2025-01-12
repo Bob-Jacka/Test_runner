@@ -6,9 +6,9 @@ set(CMAKE_CXX_STANDARD 23)
 add_executable(
         Test_runner
         main.cpp
-        game_results.h
+        Game_results.h
         custom_types.h
-        inline_funcs.h
+        Inline_funcs.h
         List.h
         Input_statements.h
 )

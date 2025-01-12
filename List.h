@@ -11,7 +11,7 @@ public:
     /*
      Получение элемента по его позиции
      */
-    T getElement(unsigned int index) const {
+    T getElement(const unsigned int index) const {
         T element;
         if (index >= this->size()) {
             for (unsigned int i = 0; i < index; i++) {
@@ -34,7 +34,7 @@ public:
         return this->back();
     }
 
-    void setElement(unsigned int index, T element) {
+    void setElement(const unsigned int index, T element) {
         if (index >= this->size()) {
             for (unsigned int i = 0; i < index; i++) {
                 this->insert(this->begin(), element);
@@ -49,7 +49,7 @@ public:
         this->insert(this->end(), element);
     }
 
-    void removeElement(unsigned int index) {
+    void removeElement(const unsigned int index) {
         if (index >= this->size()) {
             for (unsigned int i = 0; i < index; i++) {
                 this->erase(this->begin());
@@ -76,6 +76,13 @@ public:
     bool operator==(const List &anotherL) const {
         return this->getSize() == anotherL->getSize();
     }
+
+    std::ostream& operator<<(std::ostream& stream, List<T> input_list) {
+        for(auto t : input_list) {
+            stream << t;
+        }
+        return stream;
+    }
 };
 
 inline std::string to_upper(const std::string &str) {
@@ -86,4 +93,4 @@ inline std::string to_upper(const std::string &str) {
     }
     return ret;
 }
-#endif //LIST_H
+#endif

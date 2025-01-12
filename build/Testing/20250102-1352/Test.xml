@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20250102-1352-Experimental"
+	Name="(empty)"
+	Generator="ctest-3.31.3"
+	CompilerName=""
+	CompilerVersion=""
+	OSName="Linux"
+	Hostname="kirill-hppavilionlaptop13an1xxx"
+	OSRelease="6.9.12-3-MANJARO"
+	OSVersion="#1 SMP PREEMPT_DYNAMIC Wed Aug  7 16:19:28 UTC 2024"
+	OSPlatform="x86_64"
+	Is64Bits="1"
+	VendorString="GenuineIntel"
+	VendorID="Intel Corporation"
+	FamilyID="6"
+	ModelID="126"
+	ModelName="Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz"
+	ProcessorCacheSize="6144"
+	NumberOfLogicalCPU="8"
+	NumberOfPhysicalCPU="4"
+	TotalVirtualMemory="0"
+	TotalPhysicalMemory="7721"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="2322.24"
+	>
+	<Testing>
+		<StartDateTime>Jan 02 17:56 +04</StartDateTime>
+		<StartTestTime>1735826181</StartTestTime>
+		<TestList/>
+		<EndDateTime>Jan 02 17:56 +04</EndDateTime>
+		<EndTestTime>1735826181</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

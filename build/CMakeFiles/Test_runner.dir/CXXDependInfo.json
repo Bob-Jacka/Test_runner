@@ -1,0 +1,27 @@
+{
+	"bmi-installation" : null,
+	"compiler-frontend-variant" : "GNU",
+	"compiler-id" : "GNU",
+	"compiler-simulate-id" : "",
+	"config" : "Debug",
+	"cxx-modules" : {},
+	"database-info" : null,
+	"dir-cur-bld" : "/home/kirill/Downloads/Test_runner/build",
+	"dir-cur-src" : "/home/kirill/Downloads/Test_runner",
+	"dir-top-bld" : "/home/kirill/Downloads/Test_runner/build",
+	"dir-top-src" : "/home/kirill/Downloads/Test_runner",
+	"exports" : [],
+	"forward-modules-from-target-dirs" : [],
+	"include-dirs" : [],
+	"language" : "CXX",
+	"linked-target-dirs" : [],
+	"module-dir" : "/home/kirill/Downloads/Test_runner/build/CMakeFiles/Test_runner.dir",
+	"sources" : 
+	{
+		"CMakeFiles/Test_runner.dir/main.cpp.o" : 
+		{
+			"language" : "CXX",
+			"source" : "/home/kirill/Downloads/Test_runner/main.cpp"
+		}
+	}
+}
