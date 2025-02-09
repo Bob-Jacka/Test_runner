@@ -4,7 +4,20 @@
         "cppStandard": "c++23",
         "cStandard": "c23",
         "intelliSenseMode": "gcc-x64",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "*.tcc": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "format": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp",
+        "text_encoding": "cpp"
     },
     "editor.codeActionsOnSave": {
         "source.fixAll": "never",

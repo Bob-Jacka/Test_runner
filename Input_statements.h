@@ -16,6 +16,8 @@
 #define LONG_FLAG_CHOICE "--help"
 #define SHORT_FLAG_CHOICE "-h"
 
+#define ERROR_CODE 1
+
 //Test statements
 #define TEST_SUCCESS "No error"
 #define TEST_FAILURE "Failure"

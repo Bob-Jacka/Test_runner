@@ -9,17 +9,20 @@ string reverse_scan();
 void get_results(int is_write_to_file);
 void print_results();
 [[noreturn]] void get_help_menu();
+void save_results(const bool end_testing_save);
 
 //|First array| - game, |Second array| - each game test results
-List<List<one_device_results> > all_stages_test_results;
+List<List<one_device_results> > all_stages_test_results = List<List<one_device_results>>{10};
 
-List<string> test_stages;
-List<string> devices_list;
+List<string> test_stages = List<string>{10};
+List<string> devices_list = List<string>{10};
 
 time_t start_time;
 time_t end_time;
 
-counter_v stage_count;
+counter_v stage_count = 0;
+
+using namespace std;
 
 int main(const int argc, char *argv[]) {
     const List<string> params = split_string(get_string_by_chars(*argv), *" ");
@@ -38,7 +41,7 @@ int main(const int argc, char *argv[]) {
         }
         case 4: {
             tests(params.getElement(1), params.getElement(2));
-            get_results(std::stoi(params.getElement(3)));
+            get_results(stoi(params.getElement(3)));
             break;
         }
         default: {
@@ -50,11 +53,16 @@ int main(const int argc, char *argv[]) {
 }
 
 void tests(const_string &stages_cli, const_string &devices_cli) {
+    fill_array(&test_stages, stages_cli.length());
+    fill_array(&devices_list, devices_cli.length());
+
     ctime(&start_time);
     init_string_arr(test_stages, Atos(stages_cli));
     init_string_arr(devices_list, Atos(devices_cli));
+    stage_count = test_stages.getSize();
     if (stage_count != 0) {
-        init_array_by(all_stages_test_results, get_empty());
+        println_info("stage_count = 0");
+        init_array_by(stage_count, all_stages_test_results, get_empty());
     } else {
         println_error("An error occurred in making array test_results");
         gracefully_exit();
@@ -66,7 +74,7 @@ void tests(const_string &stages_cli, const_string &devices_cli) {
 }
 
 void stages(const counter_v device_num) {
-    List<one_test_result> stages_result;
+    List<one_test_result> stages_result = List<one_test_result>{10};
     println();
     println_important(devices_list.getElement(device_num));
     for (counter_v stage = 0; stage < test_stages.getSize(); stage++) {
@@ -199,4 +207,47 @@ string reverse_scan() {
     }
     println_error("Please, try again");
     return reverse_scan();
+}
+
+/*
+ bool value end_testing_save - параметр, обозначающий в какой период будет сохранение (просто для разделения логики в функции)
+ @param true для сохранения в основном потоке выполнения 
+ @param false для сохранения в функции help_menu
+ */
+void save_results(const bool end_testing_save) {
+    time_t timestamp;
+    ctime(&timestamp);
+    if (end_testing_save) {
+        println_info("Saving testing progress");
+        const_string save_path = strcat(save_file_name + timestamp, save_ext);
+        std::ofstream out(save_path, std::ios::app);
+        if (out.is_open()) {
+            for(auto res1 : all_stages_test_results) {
+                for (auto res2: res1) {
+                    out << res2.get_game_name();
+                    out << res2.get_platform_name();
+                    // out << res2.get_stages_res();
+                    println();
+                }
+            }
+        } else {
+            println_error("Failed to open save file");
+        }
+        out.close();
+    } else {
+        println_info("Saving current testing progress");
+        println("Enter stage");
+        const_string save_point_stages = input();
+        println("Enter device");
+        const_string save_point_device = input();
+        const_string save_path = strcat(save_file_name + timestamp, save_ext);
+        std::ofstream out(save_path, std::ios::trunc);
+        if (out.is_open()) {
+            out << save_point_stages << std::endl;
+            out << save_point_device << std::endl;
+        } else {
+            println_error("Failed to open save file");
+        }
+        out.close();
+    }
 }

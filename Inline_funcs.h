@@ -13,14 +13,16 @@ List<List<string> > proceed_suit(const_string &path);
 bool check_dir(const_string &path);
 void printMSG(const_string &str);
 
+using namespace std;
+
 /*
 Функция для ввода строки
 */
 inline string input() {
     printMSG(INPUT_CURSOR);
     string input;
-    std::istream &is = std::cin;
-    std::getline(is, input);
+    istream &is = cin;
+    getline(is, input);
     return input;
 }
 
@@ -30,9 +32,9 @@ inline string input() {
 inline int input_int() {
     printMSG(INPUT_CURSOR);
     string input;
-    std::istream &is = std::cin;
-    std::getline(is, input);
-    if (const int integer = std::stoi(input); isdigit(integer) == true) {
+    istream &is = cin;
+    getline(is, input);
+    if (const int integer = stoi(input); isdigit(integer) == true) {
         return integer;
     }
     return -1;
@@ -42,53 +44,53 @@ inline int input_int() {
  *Prints new line with message
  */
 inline void println(const_string &msg) {
-    std::cout << termcolor::bright_white << msg << termcolor::reset;
-    std::cout << NEW_LINE;
+    cout << termcolor::bright_white << msg << termcolor::reset;
+    cout << NEW_LINE;
 }
 
 /*
  *Prints new line with bool message
  */
 inline void println(const bool &msg) {
-    std::cout << termcolor::bright_white << msg << termcolor::reset;
-    std::cout << NEW_LINE;
+    cout << termcolor::bright_white << msg << termcolor::reset;
+    cout << NEW_LINE;
 }
 
 /*
  *Print new line
  */
 inline void println() {
-    std::cout << NEW_LINE;
+    cout << NEW_LINE;
 }
 
 inline void println_important(const_string &msg) {
-    std::cout << termcolor::bright_cyan << termcolor::underline << msg << termcolor::reset;
-    std::cout << NEW_LINE;
+    cout << termcolor::bright_cyan << termcolor::underline << msg << termcolor::reset;
+    cout << NEW_LINE;
 }
 
 /*
  *Print new line and red error message
  */
 inline void println_error(const_string &msg) {
-    std::cout << termcolor::bright_red << msg << termcolor::reset;
-    std::cout << NEW_LINE;
+    cout << termcolor::bright_red << msg << termcolor::reset;
+    cout << NEW_LINE;
 }
 
 /*
  *Print new line and white info message
  */
 inline void println_info(const_string &msg) {
-    std::cout << termcolor::blue << msg << termcolor::reset;
-    std::cout << NEW_LINE;
+    cout << termcolor::blue << msg << termcolor::reset;
+    cout << NEW_LINE;
 }
 
 /*
 Вывод сообщения независимо от цвета
 */
 inline void printMSG(const_string &str) {
-    std::cout << termcolor::reset;
-    std::cout << str << NEW_LINE;
-    std::cout << termcolor::reset;
+    cout << termcolor::reset;
+    cout << str << NEW_LINE;
+    cout << termcolor::reset;
 }
 /*
 Завершение работы программы
@@ -103,17 +105,25 @@ inline bool contains(string where, char what) {
 }
 
 inline bool starts_with(string where, string what) {
-    return where.find_first_of(what) != std::string::npos;
+    return where.find_first_of(what) != string::npos;
 }
 
 /*
 Инициализация строкового списка
 */
 inline void init_string_arr(List<string> to_which, const List<string> &from_which) {
-    for (counter_v i = 0; i < to_which.getSize(); i++) {
-        if (string elem = from_which.getElement(i); !elem.empty()) {
-            to_which.setElement(i, elem);
+    try {
+        for (counter_v i = 0; i < from_which.getSize(); i++) {
+            string elem = from_which.getElement(i);
+            if (elem.length() != 0) {
+                to_which.addElement(elem);
+            }
         }
+        if (to_which.getSize() == 0) {
+            throw ERROR_CODE;
+        }
+    } catch (int code) {
+        println_error("error in init string array " + code);
     }
 }
 
@@ -123,14 +133,21 @@ inline void init_string_arr(List<string> to_which, const List<string> &from_whic
 @param to_which в какой массив передавать инициализацию
 @param by чем заполнять массивы
  */
-inline void init_array_by(const List<List<one_device_results> > &to_which, const one_test_result &by) {
+inline void init_array_by(counter_v size, const List<List<one_device_results> > &to_which, const one_test_result &by) {
     counter_v inner_array = 0;
     counter_v outer_array = 0;
-    for (outer_array = 0; outer_array < double_size(to_which); outer_array++) {
-        for (inner_array = 0;
-             inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
-            to_which.getElement(outer_array).getElement(inner_array) = reinterpret_cast<const char *>(&by);
+    try {
+        for (outer_array = 0; outer_array < size; outer_array++) {
+            for (inner_array = 0; // Проблема с взятием нулевой длины
+                inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
+                    to_which.getElement(outer_array).getElement(inner_array) = reinterpret_cast<const char *>(&by);
+                }
         }
+        if (to_which.getSize() == 0) {
+            throw ERROR_CODE;
+        }
+    } catch (int code) {
+        println_error("error in init of array with code " + code);
     }
 }
 
@@ -139,30 +156,33 @@ inline void init_array_by(const List<List<one_device_results> > &to_which, const
 @param seconds_time время в секундах
 */
 inline void get_time_stat(const unsigned long seconds_time) {
-    println_important("Отчет по тестированию");
-    println("На тестирование ушло:");
-    const counter_v seconds = seconds_time % 60 != 0 ? seconds_time % 60 : 0;
-    const counter_v minutes = seconds / 60;
-    const counter_v hours = minutes > 60 ? minutes / 60 : 0;
-    printf("%d часов ", hours);
-    printf("n%d минут ", minutes);
-    printf("n%d секунд", seconds);
+    if (seconds_time != 0){
+        println_important("Отчет по тестированию");
+        println("На тестирование ушло:");
+        const counter_v seconds = seconds_time % 60 != 0 ? seconds_time % 60 : 0;
+        const counter_v minutes = seconds / 60;
+        const counter_v hours = minutes > 60 ? minutes / 60 : 0;
+        printf("%d часов ", hours);
+        printf("n%d минут ", minutes);
+        printf("n%d секунд ", seconds);
+    } else {
+        println("Tests were not executed");
+    }
 }
 
 /*
 Разделение строки по: 
 @param str строка для разделения
 @param delimeter для разделения
+@return Может вернуть пустой список, при условии пустой, переданной строки
+Иначе, возвращает список, который содержит строки
 */
 inline List<string> split_string(const_string &str, const char &delimiter) {
     if (str.empty()) {
         println("Empty string");
         return {};
     }
-    if (contains(str, delimiter)) {
-        return {};
-    }
-    if (contains(str, delimiter)) {
+    if (!contains(str, delimiter)) {
         println("string contains invalid characters");
         return {};
     }
@@ -196,27 +216,36 @@ inline counter_v double_size(const List<List<one_device_results> > &double_array
 /*
 Перевод массива символов в строку
 @param chars массив символов для перевода в строку
+@return строка, созданная из массива символов
 */
 inline string get_string_by_chars(char chars[]) {
-    string tmp;
-    for (int i = 0; i < strlen(chars); i++) {
-        tmp.append(&chars[i]);
+    try {
+        string tmp;
+        for (int i = 0; i < strlen(chars); i++) {
+            tmp.append(&chars[i]);
+        }   
+        if (tmp.length() == 0) {
+            throw ERROR_CODE;
+        }
+        return tmp;
+    } catch (int code) {
+        println_error("error in get string by chars");
     }
-    return tmp;
 }
 
 /*
 Проверка того, что переданный путь это файл
+@return true - если файл существует;
+false - если файла не существует
 */
 inline bool check_file(const_string &path) {
-    std::ifstream in;
+    ifstream in;
     in.open(path);
-    if (in.is_open()) {
-        in.close();
-        println_info("File exists");
+    if (in.bad() == false) {
+        println_info("file is present");
         return true;
     }
-    println_error("Error occurred in checking file");
+    println_error("error in file reading, file not exists");
     check_dir(path);
     if (path.find('.') == -1) {
         in.close();
@@ -228,16 +257,18 @@ inline bool check_file(const_string &path) {
 
 /*
 Проверка того, что переданный путь это директория
+@return true - если директория существует;
+false - если директории не существует
 */
 inline bool check_dir(const_string &path) {
-    std::ifstream in;
+    ifstream in;
     in.open(path);
-    if (in.is_open()) {
+    if (in.bad() == false) {
         println_info("Dir exists");
         in.close();
         return true;
     }
-    println_error("Error occurred is checking dir");
+    println_error("error occurred is checking dir");
     in.close();
     gracefully_exit();
     return false;
@@ -245,135 +276,159 @@ inline bool check_dir(const_string &path) {
 
 List<string> proceed_double_array(const List<List<string> > &d_array);
 
-/*
-Перевод строки в массив
-@param str строка для перевода в массив
+/**
+Перевод строки в массив.
+@param str строка для перевода в массив.
+@return список строк полученных путём разделения строки по разделителю.
 */
 inline List<string> Atos(const_string &str) {
-    if (check_file(str)) {
-        println_info("Argument is a file");
-        return proceed_double_array(proceed_suit(str));
-    }
-    if (str.find(',') == -1) {
-        println_info("using as separator ','");
-        List<string> strings = split_string(str, ',');
+    try {
+        if (check_file(str)) {
+            println_info("Argument is a file");
+            return proceed_double_array(proceed_suit(str));
+        }
+        if (str.find(',') == -1) {
+            println_info("using as separator ','");
+            List<string> strings = split_string(str, ',');
+            return strings;
+        }
+        println_info("using as separator ' ' *whitespace");
+        List<string> strings = split_string(str, ' ');
+        if (strings.getSize() == 0) {
+            throw ERROR_CODE;
+        }
         return strings;
     }
-    println_info("using as separator ' ' *whitespace");
-    List<string> strings = split_string(str, ' ');
-    return strings;
+     catch (int code) {
+        println_error("error in atos func");
+    }
 }
 
 List<string> proceed_internal_suit(const_string &path);
 
 /*
-Функция выполняет открытие файла набора тестов и читает его содержимое (построчно)
-Возвращается содержимое файла
-@param path путь к файлу с набором тестов
+Функция выполняет открытие файла набора тестов и читает его содержимое (построчно).
+Возвращается содержимое файла.
+@param path путь к файлу с набором тестов.
+@return набор, включающий тесты.
 */
 inline List<List<string> > proceed_suit(const_string &path) {
-    std::ifstream in;
-    in.open(path);
-    if (!in.is_open()) {
-        println_error("error occurred during open suit file");
-        gracefully_exit();
-        return List<List<string> >{};
-    }
-    std::string fileLine;
-    List<string> test_suit;
-    List<List<string> > all_suit;
-    while (std::getline(in, fileLine)) {
-        if (fileLine != NEW_LINE) {
-            if (!starts_with(fileLine, IGNORE_TEST)) {
-                test_suit.addElement(fileLine);
-            }
-            if (starts_with(fileLine, ANOTHER_SUIT)) {
-                println_info("Another suit detected");
-                test_suit = proceed_internal_suit(fileLine);
-            }
+    try {
+        ifstream in;
+        in.open(path);
+        if (in.bad() == true) {
+            println_error("error occurred during open suit file");
+            gracefully_exit();
+            return List<List<string> >{};
         }
-        all_suit.addElement(test_suit);
-    }
-    in.close();
-    return all_suit;
-}
-
-/*
-Обработка внутреннего набора тестов
-*/
-inline List<string> proceed_internal_suit(const_string &path) {
-    std::ifstream in;
-    in.open(path);
-    if (!in.is_open()) {
-        println_error("error occurred during file open");
-        gracefully_exit();
-        return List<string>{};
-    }
-    std::string fileLine;
-    List<string> test_suit;
-    while (std::getline(in, fileLine)) {
-        if (fileLine != NEW_LINE) {
-            if (!starts_with(fileLine, IGNORE_TEST)) {
-                test_suit.addElement(fileLine);
-            }
-        }
-    }
-    in.close();
-    return test_suit;
-}
-
-/*
-Обработка двойного массива и переделывание его в одномерный массив
-*/
-inline List<string> proceed_double_array(const List<List<string> > &d_array) {
-    List<string> test_suit;
-    for (const auto &outer: d_array) {
-        for (const auto &inner: outer) {
-            test_suit.addElement(inner);
-        }
-    }
-    return test_suit;
-}
-
-/*
- bool value end_testing_save - параметр, обозначающий в какой период будет сохранение (просто для разделения логики в функции)
- @param true для сохранения в основном потоке выполнения 
- @param false для сохранения в функции help_menu
- */
-inline void save_results(const bool end_testing_save) {
-    time_t timestamp;
-    ctime(&timestamp);
-    if (end_testing_save) {
-        println_info("Saving testing progress");
-        const_string save_path = strcat(save_file_name + timestamp, save_ext);
-        std::ofstream out(save_path, std::ios::app);
-        if (out.is_open()) {
-            for(auto res1 : all_stages_test_results) {
-                for (auto res2: res1) {
-                    out << res2.get_game_name();
-                    out << res2.get_platform_name();
-                    // out << res2.get_stages_res();
-                    println();
+        string fileLine;
+        List<string> test_suit;
+        List<List<string> > all_suit;
+        while (getline(in, fileLine)) {
+            if (fileLine != NEW_LINE) {
+                if (!starts_with(fileLine, IGNORE_TEST)) {
+                    test_suit.addElement(fileLine);
+                }
+                if (starts_with(fileLine, ANOTHER_SUIT)) {
+                    println_info("Another suit detected");
+                    test_suit = proceed_internal_suit(fileLine);
                 }
             }
-        } else {
-            println_error("Failed to open save file");
+            all_suit.addElement(test_suit);
         }
-        out.close();
-    } else {
-        println_info("Saving current testing progress");
-        println("Enter stage");
-        const_string save_point_stages = input();
-        println("Enter device");
-        const_string save_point_device = input();
-        const_string save_path = strcat(save_file_name + timestamp, save_ext);
-        std::ofstream out(save_path, std::ios::trunc);
-        if (out.is_open()) {
-            out << save_point_stages << std::endl;
-            out << save_point_device << std::endl;
-        } else {
-            println_error("Failed to open save file");
+        if (all_suit.getSize() == 0) {
+            throw ERROR_CODE;
         }
-        out.close();
+        in.close();
+        return all_suit;
+        } catch (int code) {
+            println_error("error in proceed suit");
+        }
+        return {{}};
+}
+
+/*
+Обработка внутреннего набора тестов,
+@return набор тестов.
+*/
+inline List<string> proceed_internal_suit(const_string &path) {
+    try {
+        ifstream in;
+        in.open(path);
+        if (in.bad() == true) {
+            println_error("error occurred during file open");
+            gracefully_exit();
+            return List<string>{};
+        }
+        string fileLine;
+        List<string> test_suit = List<string>{};
+        while (getline(in, fileLine)) {
+            if (fileLine != NEW_LINE) {
+                if (!starts_with(fileLine, IGNORE_TEST)) {
+                    test_suit.addElement(fileLine);
+                }
+            }
+        }
+        if (test_suit.getSize() == 0) {
+            throw ERROR_CODE;
+        }
+        in.close();
+        return test_suit;
+    } catch (int code) {
+        println_error("error in proceed inter suit");
+    }
+}
+
+/*
+Обработка двойного массива и переделывание его в одномерный массив.
+@return массив строк,
+*/
+inline List<string> proceed_double_array(const List<List<string> > &d_array) {
+    List<string> test_suit = List<string>{10};
+    try {
+        for (const auto &outer: d_array) {
+            for (const auto &inner: outer) {
+                test_suit.addElement(inner);
+            }
+        }
+        if (test_suit.getSize() == 0) { //Не выполнится
+            throw ERROR_CODE;
+        }
+        return test_suit;
+    } catch (int code) {
+        println("Error in proceed double array");
+    }
+}
+
+/*
+ * Функция для заполнения одномерного массива. 
+ */
+inline void fill_array(List<string> *array_to_fill, counter_v lenght) {
+    try {
+        for (int i = 0; i < lenght; i++) {
+            array_to_fill->push_back("");
+        }
+        if (array_to_fill->size() == 0) {
+            throw ERROR_CODE;
+        }
+    } catch (int code) {
+        println_error("error in fill array");
+    }
+    
+}
+
+inline void fill_double_array(List<List<string>> *double_array_to_fill, counter_v lenght) {
+    try {
+        for (int i = 0; i < lenght; i++) {
+        double_array_to_fill->push_front(get_empty_list());
+            for (int x = 0; x < lenght; x++) {
+                double_array_to_fill[i][x].addElement("");
+            }
+        }
+        if (double_array_to_fill->size() == 0) {
+            throw ERROR_CODE;
+        }
+    } catch (int code) {
+        println_error("error in filling double array");
     }
 }

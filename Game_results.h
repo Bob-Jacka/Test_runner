@@ -61,7 +61,7 @@ public:
     one_device_results() {
         this->game_name = "";
         this->platform_name = "";
-        this->stages_res = List<one_test_result>();
+        this->stages_res = List<one_test_result>(10);
     };
 
     std::string get_game_name() {

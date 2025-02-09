@@ -9,6 +9,7 @@
             "request": "launch",
             "name": "CMake: Script debugging",
             "cmakeDebugType": "script",
+            "scriptArgs": ["build/OneTimeTests", "build/Playcments"],
             "scriptPath": "${workspaceFolder}/cmake_install.cmake"
         },
         {
@@ -34,7 +35,6 @@
                     "ignoreFailures": true
                 }
             ]
-        }
-
+        },
     ]
 }

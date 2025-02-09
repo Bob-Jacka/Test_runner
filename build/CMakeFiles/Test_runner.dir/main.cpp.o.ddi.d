@@ -135,7 +135,7 @@ CMakeFiles/Test_runner.dir/main.cpp.o.ddi: \
  /usr/include/c++/14.2.0/bits/basic_string.tcc \
  /home/kirill/Downloads/Test_runner/Game_results.h \
  /home/kirill/Downloads/Test_runner/custom_types.h \
- /home/kirill/Downloads/Test_runner/inline_funcs.h \
+ /home/kirill/Downloads/Test_runner/Inline_funcs.h \
  /usr/include/c++/14.2.0/fstream /usr/include/c++/14.2.0/istream \
  /usr/include/c++/14.2.0/ios /usr/include/c++/14.2.0/exception \
  /usr/include/c++/14.2.0/bits/exception_ptr.h \

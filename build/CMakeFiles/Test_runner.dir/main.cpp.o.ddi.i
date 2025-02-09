@@ -8,6 +8,7 @@
 # 1 "/home/kirill/Downloads/Test_runner/List.h" 1
 
 
+
 # 1 "/usr/include/c++/14.2.0/list" 1 3
 # 58 "/usr/include/c++/14.2.0/list" 3
        
@@ -23439,7 +23440,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
     }
 
 }
-# 4 "/home/kirill/Downloads/Test_runner/List.h" 2
+# 5 "/home/kirill/Downloads/Test_runner/List.h" 2
 # 1 "/usr/include/c++/14.2.0/string" 1 3
 # 36 "/usr/include/c++/14.2.0/string" 3
        
@@ -35770,46 +35771,105 @@ namespace std __attribute__ ((__visibility__ ("default")))
     }
 
 }
-# 5 "/home/kirill/Downloads/Test_runner/List.h" 2
+# 6 "/home/kirill/Downloads/Test_runner/List.h" 2
 
 
-# 6 "/home/kirill/Downloads/Test_runner/List.h"
+
+# 8 "/home/kirill/Downloads/Test_runner/List.h"
+using namespace std;
+
 template<typename T>
+class List : public list<T> {
+private:
+    unsigned int __list_initial_size__ = 10;
+    unsigned int __add_elements_to_size = 5;
+    list<T> __inner_list__;
 
-class List : public std::list<T> {
+
+
+
+    void resize_list() {
+        unsigned int before_resize_size = __inner_list__.size();
+        delete __inner_list__;
+        __inner_list__ = new list(before_resize_size + this.__add_elements_to_size);
+    }
+
 public:
 
 
 
 
-    T getElement(unsigned int index) const {
-        T element;
-        if (index >= this->size()) {
-            for (unsigned int i = 0; i < index; i++) {
-                this->front();
-            }
-            element = this->front();
-        }
-        return element;
+    List(unsigned int init_size) {
+        __inner_list__ = list<T>{init_size};
     }
 
+
+
+
+    List() {
+        __inner_list__ = list<T>{__list_initial_size__};
+    }
+
+
+
+
+    ~List() {
+        for (T elem : this->__inner_list__) {
+            __inner_list__.remove(elem);
+        }
+        delete &__inner_list__;
+    }
+
+
+
+
+    T getElement(unsigned int index) const {
+        try {
+            if (
+                index >= __inner_list__.size()
+                &&
+                __inner_list__.size() == 0
+            ) {
+            throw 1;
+            }
+            auto it = __inner_list__.begin();
+            std::advance(it, index);
+            return *it;
+        } catch (int code) {
+            printf("error in list get elem %d\n", code);
+            printf("List size is zero\n");
+        }
+    }
+
+
+
+
     [[nodiscard]] unsigned int getSize() const {
-        return this->size();
+        return __inner_list__.size();
     }
 
     T getFront() {
-        return this->front();
+        return __inner_list__.front();
     }
 
     T getLast() {
-        return this->back();
+        return __inner_list__.back();
     }
 
-    void setElement(unsigned int index, T element) {
-        if (index >= this->size()) {
-            for (unsigned int i = 0; i < index; i++) {
-                this->insert(this->begin(), element);
+    void setElement(unsigned int index, T value) {
+        try {
+            if (
+                index >= __inner_list__.size()
+                &&
+                __inner_list__. size() == 0
+            ) {
+            throw 1;
             }
+            auto it = __inner_list__.begin();
+            std::advance(it, index);
+            *it = value;
+        } catch (int code) {
+            printf("error in set elem\n");
         }
     }
 
@@ -35817,27 +35877,27 @@ public:
 
 
     void addElement(T element) {
-        this->insert(this->end(), element);
+        __inner_list__.push_back(element);
     }
 
-    void removeElement(unsigned int index) {
-        if (index >= this->size()) {
+    void removeElement(const unsigned int index) {
+        if (index >= __inner_list__.size()) {
             for (unsigned int i = 0; i < index; i++) {
-                this->erase(this->begin());
+                __inner_list__.erase(__inner_list__.begin());
             }
         }
     }
 
     void removeElement(T element) {
-        this->erase(this->begin(), this->find(element));
+        __inner_list__.erase(__inner_list__.begin(), __inner_list__.find(element));
     }
 
     std::iterator<std::forward_iterator_tag, T> get_iterator() {
-        return std::iterator<std::forward_iterator_tag, T>(this->begin(), this->end());
+        return std::iterator<std::forward_iterator_tag, T>(__inner_list__.begin(), __inner_list__.end());
     }
 
     bool operator!=(const List &anotherL) const {
-        return this->getSize() != anotherL->getSize();
+        return __inner_list__.getSize() != anotherL.getSize();
     }
 
     T operator[](const unsigned int index) const {
@@ -35845,17 +35905,31 @@ public:
     }
 
     bool operator==(const List &anotherL) const {
-        return this->getSize() == anotherL->getSize();
+        return this->__inner_list__.size() == anotherL.size();
     }
 };
 
-inline std::string to_upper(const std::string &str) {
+inline string to_upper(const string &str) {
     const char *c = str.c_str();
-    std::string ret;
+    string ret;
     for (unsigned int i = 0; i < str.length(); i++) {
         ret.append(1, toupper(*c));
     }
     return ret;
+}
+
+
+
+
+inline List<string> get_empty_list() {
+    return List<string>{1};
+}
+
+
+
+
+inline List<string> default_list() {
+    return List<string>{10};
 }
 # 2 "/home/kirill/Downloads/Test_runner/main.cpp" 2
 # 1 "/home/kirill/Downloads/Test_runner/Game_results.h" 1
@@ -35927,7 +36001,7 @@ public:
     one_device_results() {
         this->game_name = "";
         this->platform_name = "";
-        this->stages_res = List<one_test_result>();
+        this->stages_res = List<one_test_result>(10);
     };
 
     std::string get_game_name() {
@@ -35984,7 +36058,7 @@ inline void enter_data(one_test_result to_input, const bool is_pass, const strin
     to_input.set_errors_in_test(problems_in_test);
 }
 # 3 "/home/kirill/Downloads/Test_runner/main.cpp" 2
-# 1 "/home/kirill/Downloads/Test_runner/inline_funcs.h" 1
+# 1 "/home/kirill/Downloads/Test_runner/Inline_funcs.h" 1
        
 
 # 1 "/usr/include/c++/14.2.0/fstream" 1 3
@@ -73275,7 +73349,7 @@ namespace std __attribute__ ((__visibility__ ("default")))
 
 }
 # 1361 "/usr/include/c++/14.2.0/fstream" 2 3
-# 4 "/home/kirill/Downloads/Test_runner/inline_funcs.h" 2
+# 4 "/home/kirill/Downloads/Test_runner/Inline_funcs.h" 2
 # 1 "/usr/include/c++/14.2.0/iostream" 1 3
 # 36 "/usr/include/c++/14.2.0/iostream" 3
        
@@ -73307,16 +73381,16 @@ namespace std __attribute__ ((__visibility__ ("default")))
 
 
 }
-# 5 "/home/kirill/Downloads/Test_runner/inline_funcs.h" 2
+# 5 "/home/kirill/Downloads/Test_runner/Inline_funcs.h" 2
 
 
 # 1 "/home/kirill/Downloads/Test_runner/Input_statements.h" 1
-# 25 "/home/kirill/Downloads/Test_runner/Input_statements.h"
+# 27 "/home/kirill/Downloads/Test_runner/Input_statements.h"
 
-# 25 "/home/kirill/Downloads/Test_runner/Input_statements.h"
+# 27 "/home/kirill/Downloads/Test_runner/Input_statements.h"
 inline char *save_file_name = "save-point";
 inline char *save_ext = ".txt";
-# 8 "/home/kirill/Downloads/Test_runner/inline_funcs.h" 2
+# 8 "/home/kirill/Downloads/Test_runner/Inline_funcs.h" 2
 # 1 "/home/kirill/Downloads/Test_runner/termcolor.hpp" 1
 # 41 "/home/kirill/Downloads/Test_runner/termcolor.hpp"
 # 1 "/usr/include/unistd.h" 1 3 4
@@ -75448,7 +75522,7 @@ namespace termcolor {
 # 817 "/home/kirill/Downloads/Test_runner/termcolor.hpp"
     }
 }
-# 9 "/home/kirill/Downloads/Test_runner/inline_funcs.h" 2
+# 9 "/home/kirill/Downloads/Test_runner/Inline_funcs.h" 2
 # 1 "/usr/include/c++/14.2.0/cstring" 1 3
 # 39 "/usr/include/c++/14.2.0/cstring" 3
        
@@ -75927,29 +76001,37 @@ namespace std __attribute__ ((__visibility__ ("default")))
 
 }
 }
-# 10 "/home/kirill/Downloads/Test_runner/inline_funcs.h" 2
+# 10 "/home/kirill/Downloads/Test_runner/Inline_funcs.h" 2
 
 
-# 11 "/home/kirill/Downloads/Test_runner/inline_funcs.h"
+# 11 "/home/kirill/Downloads/Test_runner/Inline_funcs.h"
 counter_v double_size(const List<List<one_device_results> > &double_array);
 List<List<string> > proceed_suit(const_string &path);
 bool check_dir(const_string &path);
 void printMSG(const_string &str);
 
+using namespace std;
+
+
+
+
 inline string input() {
     printMSG(">> ");
     string input;
-    std::istream &is = std::cin;
-    std::getline(is, input);
+    istream &is = cin;
+    getline(is, input);
     return input;
 }
+
+
+
 
 inline int input_int() {
     printMSG(">> ");
     string input;
-    std::istream &is = std::cin;
-    std::getline(is, input);
-    if (const int integer = std::stoi(input); isdigit(integer) == true) {
+    istream &is = cin;
+    getline(is, input);
+    if (const int integer = stoi(input); isdigit(integer) == true) {
         return integer;
     }
     return -1;
@@ -75959,54 +76041,56 @@ inline int input_int() {
 
 
 inline void println(const_string &msg) {
-    std::cout << termcolor::bright_white << msg << termcolor::reset;
-    std::cout << "\n";
+    cout << termcolor::bright_white << msg << termcolor::reset;
+    cout << "\n";
 }
 
 
 
 
 inline void println(const bool &msg) {
-    std::cout << termcolor::bright_white << msg << termcolor::reset;
-    std::cout << "\n";
+    cout << termcolor::bright_white << msg << termcolor::reset;
+    cout << "\n";
 }
 
 
 
 
 inline void println() {
-    std::cout << "\n";
+    cout << "\n";
 }
 
 inline void println_important(const_string &msg) {
-    std::cout << termcolor::bright_cyan << termcolor::underline << msg << termcolor::reset;
-    std::cout << "\n";
+    cout << termcolor::bright_cyan << termcolor::underline << msg << termcolor::reset;
+    cout << "\n";
 }
 
 
 
 
 inline void println_error(const_string &msg) {
-    std::cout << termcolor::bright_red << msg << termcolor::reset;
-    std::cout << "\n";
+    cout << termcolor::bright_red << msg << termcolor::reset;
+    cout << "\n";
 }
 
 
 
 
 inline void println_info(const_string &msg) {
-    std::cout << termcolor::blue << msg << termcolor::reset;
-    std::cout << "\n";
+    cout << termcolor::blue << msg << termcolor::reset;
+    cout << "\n";
 }
 
 
 
 
 inline void printMSG(const_string &str) {
-    std::cout << termcolor::reset;
-    std::cout << str << "\n";
-    std::cout << termcolor::reset;
+    cout << termcolor::reset;
+    cout << str << "\n";
+    cout << termcolor::reset;
 }
+
+
 
 inline void gracefully_exit() {
     println("Exiting...");
@@ -76018,51 +76102,77 @@ inline bool contains(string where, char what) {
 }
 
 inline bool starts_with(string where, string what) {
-    return where.find_first_of(what) != std::string::npos;
+    return where.find_first_of(what) != string::npos;
 }
+
+
+
 
 inline void init_string_arr(List<string> to_which, const List<string> &from_which) {
-    for (counter_v i = 0; i < to_which.getSize(); i++) {
-        if (string elem = from_which.getElement(i); !elem.empty()) {
-            to_which.setElement(i, elem);
+    try {
+        for (counter_v i = 0; i < from_which.getSize(); i++) {
+            string elem = from_which.getElement(i);
+            if (elem.length() != 0) {
+                to_which.addElement(elem);
+            }
         }
+        if (to_which.getSize() == 0) {
+            throw 1;
+        }
+    } catch (int code) {
+        println_error("error in init string array " + code);
     }
 }
 
 
 
 
-inline void init_array_by(const List<List<one_device_results> > &to_which, const one_test_result &by) {
+
+
+
+inline void init_array_by(counter_v size, const List<List<one_device_results> > &to_which, const one_test_result &by) {
     counter_v inner_array = 0;
     counter_v outer_array = 0;
-    for (outer_array = 0; outer_array < double_size(to_which); outer_array++) {
-        for (inner_array = 0;
-             inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
-            to_which.getElement(outer_array).getElement(inner_array) = reinterpret_cast<const char *>(&by);
+    try {
+        for (outer_array = 0; outer_array < size; outer_array++) {
+            for (inner_array = 0;
+                inner_array < to_which.getElement(outer_array).getElement(inner_array).size(); inner_array++) {
+                    to_which.getElement(outer_array).getElement(inner_array) = reinterpret_cast<const char *>(&by);
+                }
         }
+        if (to_which.getSize() == 0) {
+            throw 1;
+        }
+    } catch (int code) {
+        println_error("error in init of array with code " + code);
     }
 }
 
-inline void get_time_stat(const unsigned long seconds_time) {
-    println_important("Отчет по тестированию");
-    println("На тестирование ушло:");
-    const counter_v seconds = seconds_time % 60 != 0 ? seconds_time % 60 : 0;
-    const counter_v minutes = seconds / 60;
-    const counter_v hours = minutes > 60 ? minutes / 60 : 0;
-    printf("%d часов ", hours);
-    printf("n%d минут ", minutes);
-    printf("n%d секунд", seconds);
-}
 
+
+
+
+inline void get_time_stat(const unsigned long seconds_time) {
+    if (seconds_time != 0){
+        println_important("Отчет по тестированию");
+        println("На тестирование ушло:");
+        const counter_v seconds = seconds_time % 60 != 0 ? seconds_time % 60 : 0;
+        const counter_v minutes = seconds / 60;
+        const counter_v hours = minutes > 60 ? minutes / 60 : 0;
+        printf("%d часов ", hours);
+        printf("n%d минут ", minutes);
+        printf("n%d секунд ", seconds);
+    } else {
+        println("Tests were not executed");
+    }
+}
+# 180 "/home/kirill/Downloads/Test_runner/Inline_funcs.h"
 inline List<string> split_string(const_string &str, const char &delimiter) {
     if (str.empty()) {
         println("Empty string");
         return {};
     }
-    if (contains(str, delimiter)) {
-        return {};
-    }
-    if (contains(str, delimiter)) {
+    if (!contains(str, delimiter)) {
         println("string contains invalid characters");
         return {};
     }
@@ -76083,6 +76193,9 @@ inline List<string> split_string(const_string &str, const char &delimiter) {
     return splitted;
 }
 
+
+
+
 inline counter_v double_size(const List<List<one_device_results> > &double_array) {
     const counter_v rows = double_array.size();
     const counter_v cols = double_array.empty() ? 0 : double_array.getElement(0).size();
@@ -76090,26 +76203,39 @@ inline counter_v double_size(const List<List<one_device_results> > &double_array
     return size;
 }
 
+
+
+
+
+
 inline string get_string_by_chars(char chars[]) {
-    string tmp;
-    for (int i = 0; i < strlen(chars); i++) {
-        tmp.append(&chars[i]);
+    try {
+        string tmp;
+        for (int i = 0; i < strlen(chars); i++) {
+            tmp.append(&chars[i]);
+        }
+        if (tmp.length() == 0) {
+            throw 1;
+        }
+        return tmp;
+    } catch (int code) {
+        println_error("error in get string by chars");
     }
-    return tmp;
 }
 
 
 
 
+
+
 inline bool check_file(const_string &path) {
-    std::ifstream in;
+    ifstream in;
     in.open(path);
-    if (in.is_open()) {
-        in.close();
-        println_info("File exists");
+    if (in.bad() == false) {
+        println_info("file is present");
         return true;
     }
-    println_error("Error occurred in checking file");
+    println_error("error in file reading, file not exists");
     check_dir(path);
     if (path.find('.') == -1) {
         in.close();
@@ -76122,15 +76248,17 @@ inline bool check_file(const_string &path) {
 
 
 
+
+
 inline bool check_dir(const_string &path) {
-    std::ifstream in;
+    ifstream in;
     in.open(path);
-    if (in.is_open()) {
+    if (in.bad() == false) {
         println_info("Dir exists");
         in.close();
         return true;
     }
-    println_error("Error occurred is checking dir");
+    println_error("error occurred is checking dir");
     in.close();
     gracefully_exit();
     return false;
@@ -76141,19 +76269,29 @@ List<string> proceed_double_array(const List<List<string> > &d_array);
 
 
 
+
+
 inline List<string> Atos(const_string &str) {
-    if (check_file(str)) {
-        println_info("Argument is a file");
-        return proceed_double_array(proceed_suit(str));
-    }
-    if (str.find(',') == -1) {
-        println_info("using as separator ','");
-        List<string> strings = split_string(str, ',');
+    try {
+        if (check_file(str)) {
+            println_info("Argument is a file");
+            return proceed_double_array(proceed_suit(str));
+        }
+        if (str.find(',') == -1) {
+            println_info("using as separator ','");
+            List<string> strings = split_string(str, ',');
+            return strings;
+        }
+        println_info("using as separator ' ' *whitespace");
+        List<string> strings = split_string(str, ' ');
+        if (strings.getSize() == 0) {
+            throw 1;
+        }
         return strings;
     }
-    println_info("using as separator ' ' *whitespace");
-    List<string> strings = split_string(str, ' ');
-    return strings;
+     catch (int code) {
+        println_error("error in atos func");
+    }
 }
 
 List<string> proceed_internal_suit(const_string &path);
@@ -76162,114 +76300,151 @@ List<string> proceed_internal_suit(const_string &path);
 
 
 
+
+
 inline List<List<string> > proceed_suit(const_string &path) {
-    std::ifstream in;
-    in.open(path);
-    if (!in.is_open()) {
-        println_error("error occurred during open suit file");
-        gracefully_exit();
-        return List<List<string> >{};
-    }
-    std::string fileLine;
-    List<string> test_suit;
-    List<List<string> > all_suit;
-    while (std::getline(in, fileLine)) {
-        if (fileLine != "\n") {
-            if (!starts_with(fileLine, "*")) {
-                test_suit.addElement(fileLine);
-            }
-            if (starts_with(fileLine, "$")) {
-                println_info("Another suit detected");
-                test_suit = proceed_internal_suit(fileLine);
-            }
+    try {
+        ifstream in;
+        in.open(path);
+        if (in.bad() == true) {
+            println_error("error occurred during open suit file");
+            gracefully_exit();
+            return List<List<string> >{};
         }
-        all_suit.addElement(test_suit);
-    }
-    in.close();
-    return all_suit;
+        string fileLine;
+        List<string> test_suit;
+        List<List<string> > all_suit;
+        while (getline(in, fileLine)) {
+            if (fileLine != "\n") {
+                if (!starts_with(fileLine, "*")) {
+                    test_suit.addElement(fileLine);
+                }
+                if (starts_with(fileLine, "$")) {
+                    println_info("Another suit detected");
+                    test_suit = proceed_internal_suit(fileLine);
+                }
+            }
+            all_suit.addElement(test_suit);
+        }
+        if (all_suit.getSize() == 0) {
+            throw 1;
+        }
+        in.close();
+        return all_suit;
+        } catch (int code) {
+            println_error("error in proceed suit");
+        }
+        return {{}};
 }
+
+
+
+
 
 inline List<string> proceed_internal_suit(const_string &path) {
-    std::ifstream in;
-    in.open(path);
-    if (!in.is_open()) {
-        println_error("error occurred during file open");
-        gracefully_exit();
-        return List<string>{};
-    }
-    std::string fileLine;
-    List<string> test_suit;
-    while (std::getline(in, fileLine)) {
-        if (fileLine != "\n") {
-            if (!starts_with(fileLine, "*")) {
-                test_suit.addElement(fileLine);
+    try {
+        ifstream in;
+        in.open(path);
+        if (in.bad() == true) {
+            println_error("error occurred during file open");
+            gracefully_exit();
+            return List<string>{};
+        }
+        string fileLine;
+        List<string> test_suit = List<string>{};
+        while (getline(in, fileLine)) {
+            if (fileLine != "\n") {
+                if (!starts_with(fileLine, "*")) {
+                    test_suit.addElement(fileLine);
+                }
             }
         }
+        if (test_suit.getSize() == 0) {
+            throw 1;
+        }
+        in.close();
+        return test_suit;
+    } catch (int code) {
+        println_error("error in proceed inter suit");
     }
-    in.close();
-    return test_suit;
 }
+
+
+
+
 
 inline List<string> proceed_double_array(const List<List<string> > &d_array) {
-    List<string> test_suit;
-    for (const auto &outer: d_array) {
-        for (const auto &inner: outer) {
-            test_suit.addElement(inner);
+    List<string> test_suit = List<string>{10};
+    try {
+        for (const auto &outer: d_array) {
+            for (const auto &inner: outer) {
+                test_suit.addElement(inner);
+            }
         }
+        if (test_suit.getSize() == 0) {
+            throw 1;
+        }
+        return test_suit;
+    } catch (int code) {
+        println("Error in proceed double array");
     }
-    return test_suit;
 }
 
 
 
 
-inline void save_results(const bool end_testing_save) {
-    time_t timestamp;
-    ctime(&timestamp);
-    if (end_testing_save) {
-
-    } else {
-        println_info("Saving current testing progress");
-        println("Enter stage");
-        const_string save_point_stages = input();
-        println("Enter device");
-        const_string save_point_device = input();
-        const string save_path = strcat(save_file_name + timestamp, save_ext);
-        std::ofstream out(save_path, std::ios::app);
-        if (out.is_open()) {
-            out << save_point_stages << std::endl;
-            out << save_point_device << std::endl;
-        } else {
-            println_error("Failed to open save file");
+inline void fill_array(List<string> *array_to_fill, counter_v lenght) {
+    try {
+        for (int i = 0; i < lenght; i++) {
+            array_to_fill->push_back("");
         }
-        out.close();
+        if (array_to_fill->size() == 0) {
+            throw 1;
+        }
+    } catch (int code) {
+        println_error("error in fill array");
+    }
+
+}
+
+inline void fill_double_array(List<List<string>> *double_array_to_fill, counter_v lenght) {
+    try {
+        for (int i = 0; i < lenght; i++) {
+        double_array_to_fill->push_front(get_empty_list());
+            for (int x = 0; x < lenght; x++) {
+                double_array_to_fill[i][x].addElement("");
+            }
+        }
+        if (double_array_to_fill->size() == 0) {
+            throw 1;
+        }
+    } catch (int code) {
+        println_error("error in filling double array");
     }
 }
 # 4 "/home/kirill/Downloads/Test_runner/main.cpp" 2
 
 
 void stages(counter_v device_num);
-
 void tests(const_string &stages_cli, const string &devices_cli);
-
 string reverse_scan();
-
 void get_results(int is_write_to_file);
-
 void print_results();
-
 [[noreturn]] void get_help_menu();
+void save_results(const bool end_testing_save);
 
 
-List<List<one_device_results> > all_stages_test_results;
+List<List<one_device_results> > all_stages_test_results = List<List<one_device_results>>{10};
 
-List<string> test_stages;
-List<string> devices_list;
+List<string> test_stages = List<string>{10};
+List<string> devices_list = List<string>{10};
 
 time_t start_time;
 time_t end_time;
 
-counter_v stage_count;
+counter_v stage_count = 0;
+
+using namespace std;
 
 int main(const int argc, char *argv[]) {
     const List<string> params = split_string(get_string_by_chars(*argv), *" ");
@@ -76278,8 +76453,8 @@ int main(const int argc, char *argv[]) {
             println_important("Utility usage:");
             println_info("First cli argument is <Test stages>");
             println_info("Second cli argument is <Devices>");
-            println_info("Third cli argument is <true / false write results to file>");
-            return 0;
+            println_info("Third cli argument is <true / false write results to file> (optional)");
+            break;
         }
         case 3: {
             tests(params.getElement(1), params.getElement(2));
@@ -76288,7 +76463,7 @@ int main(const int argc, char *argv[]) {
         }
         case 4: {
             tests(params.getElement(1), params.getElement(2));
-            get_results(std::stoi(params.getElement(3)));
+            get_results(stoi(params.getElement(3)));
             break;
         }
         default: {
@@ -76300,11 +76475,16 @@ int main(const int argc, char *argv[]) {
 }
 
 void tests(const_string &stages_cli, const_string &devices_cli) {
+    fill_array(&test_stages, stages_cli.length());
+    fill_array(&devices_list, devices_cli.length());
+
     ctime(&start_time);
     init_string_arr(test_stages, Atos(stages_cli));
     init_string_arr(devices_list, Atos(devices_cli));
+    stage_count = test_stages.getSize();
     if (stage_count != 0) {
-        init_array_by(all_stages_test_results, get_empty());
+        println_info("stage_count = 0");
+        init_array_by(stage_count, all_stages_test_results, get_empty());
     } else {
         println_error("An error occurred in making array test_results");
         gracefully_exit();
@@ -76316,7 +76496,7 @@ void tests(const_string &stages_cli, const_string &devices_cli) {
 }
 
 void stages(const counter_v device_num) {
-    List<one_test_result> stages_result;
+    List<one_test_result> stages_result = List<one_test_result>{10};
     println();
     println_important(devices_list.getElement(device_num));
     for (counter_v stage = 0; stage < test_stages.getSize(); stage++) {
@@ -76449,4 +76629,47 @@ string reverse_scan() {
     }
     println_error("Please, try again");
     return reverse_scan();
+}
+
+
+
+
+
+
+void save_results(const bool end_testing_save) {
+    time_t timestamp;
+    ctime(&timestamp);
+    if (end_testing_save) {
+        println_info("Saving testing progress");
+        const_string save_path = strcat(save_file_name + timestamp, save_ext);
+        std::ofstream out(save_path, std::ios::app);
+        if (out.is_open()) {
+            for(auto res1 : all_stages_test_results) {
+                for (auto res2: res1) {
+                    out << res2.get_game_name();
+                    out << res2.get_platform_name();
+
+                    println();
+                }
+            }
+        } else {
+            println_error("Failed to open save file");
+        }
+        out.close();
+    } else {
+        println_info("Saving current testing progress");
+        println("Enter stage");
+        const_string save_point_stages = input();
+        println("Enter device");
+        const_string save_point_device = input();
+        const_string save_path = strcat(save_file_name + timestamp, save_ext);
+        std::ofstream out(save_path, std::ios::trunc);
+        if (out.is_open()) {
+            out << save_point_stages << std::endl;
+            out << save_point_device << std::endl;
+        } else {
+            println_error("Failed to open save file");
+        }
+        out.close();
+    }
 }
