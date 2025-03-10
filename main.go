@@ -1,21 +1,27 @@
 /*
 				Test runner.
-Program for testing, written in GO language version.
+Program for testing, written in GO language app_version.
 
 author - cupcake_WRLD
-version - 2.2.1
 
 Test runner architecture:
-                             Program entry point
+                             (Program entry point)
 									main
                                  Atos | Atos
-                                 game_tests
+                                   /     \
+                           game_tests   get_results -> write_results_to_file -> print_results_to_file -> __write_string__
 									  |
-                                 suit_proceed_______________       ,  print{Error, MSG}, recreate_slice..., colored_txt_output
-                                     /  \                   \
-                       str_user_input    get_results(Atob())  int_user_input
-                                           /      \
-                      print_results_to_console    write_results_to_file
+                  ______________suit_proceed, print{Error, MSG}, recreate_slice..., colored_txt_output
+                 /                /     \
+     write_problems  str_user_input     int_user_input
+                           |
+                     help_menu_______
+                    /     |          \
+       load_progress   get_results   write_results_to_file
+                        |
+               print_results_to_console
+
+"\ / | ->" - означает передачу управления нижележащей функции.
 */
 
 package main
@@ -23,6 +29,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"strconv"
@@ -53,13 +60,16 @@ const (
 	ignore_line = "*" // Ignore line in test suit if it starts with this sign.
 	nested_suit = "$" // Represents line is test suit as another test suit if it starts with this sign.
 
-	fail_check_file   = "Error occurred in checking file."
-	fail_check_dir    = "Error occurred in checking dir."
-	fail_on_write     = "Error occurred in writing file."
-	fail_on_open_file = "Error occurred during file action."
+	fail_check_file     = "Error occurred in checking file."
+	fail_check_dir      = "Error occurred in checking dir."
+	fail_on_write       = "Error occurred in writing file."
+	fail_on_file_action = "Error occurred during file action."
 
-	str_input_err = "Error occurred in str_user_input."
-	int_input_err = "Error occurred in int_user_input."
+	str_input_err      = "Error occurred in str_user_input."
+	write_problems_err = "Error occurred in write_problems."
+	int_input_err      = "Error occurred in int_user_input."
+
+	test_res_error = "An error occurred in making array test_results."
 
 	file_name_ext = "results.txt"
 
@@ -78,10 +88,17 @@ const (
 	go_comp       = "\tGo compiler is "
 	comp_arch     = "\tComputer arch at time is "
 	max_processes = "\tMax available processors are "
+
+	app_version = "2.3.2" // Версия приложения
 )
 
 // Определенный типы для программы.
 type (
+
+	/*
+		    Пользовательский тип для цветов.
+			Используется в цветном выводе в консоль
+	*/
 	Color string
 
 	/*
@@ -109,8 +126,8 @@ var (
 	start_time time.Time // Время начала тестирования.
 	end_time   time.Time // Время конца тестирования.
 
-	devices_count int16 = 0 // Количество устройств.
-	tests_count   int   = 0 // Количество тестов в тестовом наборе.
+	devices_count int = 0 // Количество устройств на которых должно быть проведено тестирование.
+	tests_count   int = 0 // Количество тестов в тестовом наборе.
 )
 
 /*
@@ -118,27 +135,25 @@ var (
 Принимает аргументы консоли и на их основании делает дальнейшее выполнение.
 */
 func main() {
-	var args_len = len(os.Args)
+	var args_len = len(os.Args) - 1 // минус 1, потому что 1 аргумент это имя файла.
 	switch args_len {
-	case 1:
+	case 0:
 		colored_txt_output("Utility usage:", blue)
 		colored_txt_output("First cli argument is <Test suit>", blue)
 		colored_txt_output("*Optional arg - Second cli argument is <Devices List>", blue)
 		colored_txt_output("*Optional arg - Third cli argument is <true / false write results to file>", blue)
-		fmt.Println()
-	case 2:
+	case 1:
 		game_tests(os.Args[1], none_type)
-	case 3:
+	case 2:
 		game_tests(os.Args[1], os.Args[2])
-		get_results(Atob("false"))
-	case 4:
+		get_results(false)
+	case 3:
 		game_tests(os.Args[1], os.Args[2])
 		get_results(Atob(os.Args[3]))
 	default:
 		colored_txt_output(wrong_arg, red)
 	}
 	defer func() {
-		fmt.Println()
 		colored_txt_output("Bye!", magenta)
 		os.Exit(666)
 	}()
@@ -157,7 +172,7 @@ func game_tests(game_stages_cli string, games_devices_cli string) {
 	if devices_count != 0 {
 		test_results = recreate_double_slice(games_devices_cli)
 	} else {
-		colored_txt_output("An error occurred in making array test_results.", red)
+		colored_txt_output(test_res_error, red)
 		os.Exit(1)
 	}
 
@@ -180,17 +195,16 @@ func suit_proceed(device_num int) {
 		colored_txt_output("\t"+every_test_msg, blue)
 
 		var user_input = str_user_input("", green)
-		//if user_input_sign == help_test {
-		//	help_menu()
-		//}
 		var bool_res = reverse_scan(user_input)
 		if bool_res == true {
 			stages_result[stage_num] = test_stages[stage_num] + " - No errors"
-		} else if !bool_res && user_input == skip_test {
+		} else if !bool_res && (user_input == skip_test || user_input == "") { // Был баг, если нажать перенос строки и затем валидный токен, то переносило в секцию багов.
 			stages_result[stage_num] = test_stages[stage_num] + " - TEST SKIPPED"
 		} else if !bool_res {
-			var problems = str_user_input(on_bug_msg, red)
+			var problems = write_problems(on_bug_msg, red)
 			stages_result[stage_num] = test_stages[stage_num] + " - " + problems
+		} else {
+			//
 		}
 	}
 	test_results[device_num] = append(stages_result)
@@ -240,28 +254,20 @@ func print_results_to_console() {
 
 /*
 Функция для записи результатов тестирования в файл.
+Запись результатов происходит через строковый канал.
 */
 func write_results_to_file() {
 	var file, err = os.Create(file_name_ext)
-	var save_chan = make(chan string)
 	if err != nil {
 		printError(fail_on_write)
 		os.Exit(1)
 		return
 	} else {
-		print_results_chan(save_chan)
-	}
-	var writer = bufio.NewWriter(file)
-	for str := range save_chan {
-		_, err := writer.WriteString(str)
-		if err != nil {
-			printError(fail_on_write)
-			return
-		}
+		go print_results_to_file(file)
 	}
 	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
+		err2 := file.Close()
+		if err2 != nil {
 			printError(fail_on_write)
 		}
 	}(file)
@@ -270,58 +276,58 @@ func write_results_to_file() {
 /*
 Функция для записи результатов тестирования в "канал".
 */
-func print_results_chan(chan_to_write chan string) {
+func print_results_to_file(fd *os.File) {
 	fmt.Println()
-	for game_num := 0; game_num < len(test_results); game_num++ {
+	for device_counter := 0; device_counter < devices_count; device_counter++ {
 		fmt.Println(cReset)
-		colored_txt_output(strings.ToUpper(playsments_list[game_num]), blue)
-		chan_to_write <- strings.ToUpper(playsments_list[game_num])
-		for stage := 0; stage < len(test_results[game_num]); stage++ {
-			var res = test_results[game_num][stage]
+		colored_txt_output(strings.ToUpper(playsments_list[device_counter]), blue)
+		__write_string__(fd, strings.ToUpper(playsments_list[device_counter]))
+		for stage := 0; stage < len(test_results[device_counter]); stage++ {
+			var res = test_results[device_counter][stage]
 			if res != "" {
 				colored_txt_output("\t"+res, blue)
-				chan_to_write <- "\t" + res
+				__write_string__(fd, "\t"+res)
 			}
 		}
 	}
 	var duration = end_time.Sub(start_time)
 	fmt.Println()
 	colored_txt_output(spend_time_on_test, yellow)
-	chan_to_write <- spend_time_on_test
+	__write_string__(fd, spend_time_on_test)
 
 	colored_txt_output(hours, yellow)
-	chan_to_write <- hours
+	__write_string__(fd, hours)
 
 	colored_txt_output(duration.Hours(), yellow)
-	chan_to_write <- strconv.FormatFloat(duration.Hours(), 'f', 2, 64)
+	__write_string__(fd, strconv.FormatFloat(duration.Hours(), 'f', 2, 64))
 
 	colored_txt_output(minutes, yellow)
-	chan_to_write <- minutes
+	__write_string__(fd, minutes)
 
 	colored_txt_output(duration.Minutes(), yellow)
-	chan_to_write <- strconv.FormatInt(int64(duration.Minutes()), 10)
+	__write_string__(fd, strconv.FormatInt(int64(duration.Minutes()), 10))
 
 	colored_txt_output(seconds, yellow)
-	chan_to_write <- seconds
+	__write_string__(fd, seconds)
 
 	colored_txt_output(duration.Seconds(), yellow)
-	chan_to_write <- strconv.FormatFloat(duration.Seconds(), 'f', 2, 64)
+	__write_string__(fd, strconv.FormatFloat(duration.Seconds(), 'f', 2, 64))
 
 	fmt.Println()
 	colored_txt_output(other_info, yellow)
-	chan_to_write <- other_info
+	__write_string__(fd, other_info)
 
 	colored_txt_output(go_comp+runtime.Compiler, yellow)
-	chan_to_write <- go_comp + runtime.Compiler
+	__write_string__(fd, go_comp+runtime.Compiler)
 
 	colored_txt_output(comp_arch+runtime.GOARCH, yellow)
-	chan_to_write <- comp_arch + runtime.GOARCH
+	__write_string__(fd, comp_arch+runtime.GOARCH)
 
 	colored_txt_output(max_processes, yellow)
-	chan_to_write <- max_processes
+	__write_string__(fd, max_processes)
 
 	fmt.Println(runtime.GOMAXPROCS(runtime.NumCPU()))
-	chan_to_write <- strconv.FormatInt(int64(runtime.GOMAXPROCS(runtime.NumCPU())), 10)
+	__write_string__(fd, strconv.FormatInt(int64(runtime.GOMAXPROCS(runtime.NumCPU())), 10))
 }
 
 /*
@@ -335,12 +341,21 @@ func reverse_scan(scan_val string) bool {
 		return false
 	case skip_test:
 		return false
-	case help_test:
-		return false
 	default:
 		colored_txt_output(wrong_arg, red)
 		var recurse_txt = str_user_input("", green)
 		return reverse_scan(recurse_txt)
+	}
+}
+
+/*
+Приватная функция для ввода строки в файл.
+Обрабатывает ошибки.
+*/
+func __write_string__(fd *os.File, str string) {
+	_, err := fd.WriteString(str)
+	if err != nil {
+		return
 	}
 }
 
@@ -352,17 +367,27 @@ func help_menu() {
 	colored_txt_output("1. Save progress,", white)
 	colored_txt_output("2. Load progress,", white)
 	colored_txt_output("3. See results,", white)
-	colored_txt_output("4. Close menu.", white)
+	colored_txt_output("4. App app_version,", white)
+	colored_txt_output("5. Close menu.", white)
+	fmt.Println("Enter action number:")
+	fmt.Print(user_input_sign)
 	var user_input = int_user_input("")
 	switch user_input {
 	case 1:
+		write_results_to_file()
 		break
 	case 2:
-		break // TODO доделать
+		colored_txt_output("Loading last test result", blue)
+		var loaded_string = load_progress()
+		colored_txt_output(loaded_string, green)
+		break
 	case 3:
-		get_results(true)
+		get_results(false)
 		break
 	case 4:
+		colored_txt_output("App version is "+app_version, white)
+		break
+	case 5:
 		break
 	}
 }
@@ -436,20 +461,21 @@ func Atos(str string, increm bool) []string {
 		}
 	} else {
 		devices_count = 1 // Делаем количество устройств равным 1, если устройство не передано.
-		return []string{"SingleDevice"}
+		return []string{"Single_Device"}
 	}
 }
 
 /*
 Функция выполняет открытие файла и читает его содержимое (построчно).
 Возвращается содержимое файла.
+Increm - параметр, означающий необходимо ли увеличивать число устройств.
 */
 func proceed_file(path string, increm bool) []string {
 	var file, err = os.Open(path)
 	if err != nil {
 		err := file.Close()
 		if err != nil {
-			colored_txt_output(fail_on_open_file, red)
+			colored_txt_output(fail_on_file_action, red)
 		}
 		os.Exit(1)
 	}
@@ -469,10 +495,40 @@ func proceed_file(path string, increm bool) []string {
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
-			colored_txt_output(fail_on_open_file, red)
+			colored_txt_output(fail_on_file_action, red)
 		}
 	}(file)
 	return read_array
+}
+
+/*
+Функция для загрузки информации о прохождении тестирования.
+*/
+func load_progress() string {
+	var file, err = os.Open(file_name_ext)
+	if err != nil {
+		err := file.Close()
+		if err != nil {
+			colored_txt_output(fail_on_file_action, red)
+		}
+		os.Exit(1)
+	}
+	var reader = bufio.NewReader(file)
+	var scanner = bufio.NewScanner(reader)
+	var last_test string
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line != io.EOF.Error() {
+			last_test = line
+		}
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			colored_txt_output(fail_on_file_action, red)
+		}
+	}(file)
+	return last_test
 }
 
 /*
@@ -520,13 +576,35 @@ func str_user_input(topic string, clr Color) string {
 	if topic != "" {
 		fmt.Println(clr, topic)
 	}
-	fmt.Print(user_input_sign, green)
+	fmt.Print(user_input_sign, cyan)
 	_, err := fmt.Scanln(&user_input)
-	if err != nil {
-		printError(int_input_err)
+	if err != nil && err.Error() != "unexpected newline" {
+		colored_txt_output(str_input_err, red)
 		return ""
+	} else if user_input == help_test {
+		help_menu()
+		colored_txt_output("Testing continues", gray)
+		user_input = str_user_input(topic, clr)
 	}
 	return user_input
+}
+
+/*
+Функция для строкового ввода с пробелами.
+Возвращает введенную строку.
+*/
+func write_problems(topic string, clr Color) string {
+	var reader = bufio.NewReader(os.Stdin)
+	if topic != "" {
+		fmt.Println(clr, topic)
+	}
+	fmt.Print(user_input_sign, cyan)
+	var read, err = reader.ReadString('\n')
+	if err != nil {
+		colored_txt_output(write_problems_err, red)
+		return ""
+	}
+	return strings.TrimSpace(read)
 }
 
 /*
@@ -536,9 +614,9 @@ func str_user_input(topic string, clr Color) string {
 func int_user_input(topic string) int {
 	var user_input int
 	if topic != "" {
-		_, err := fmt.Scanln(&user_input)
-		if err != nil {
-			printError(str_input_err)
+		_, err := fmt.Scanln(&user_input, cyan)
+		if err != nil && err.Error() != "unexpected newline" {
+			colored_txt_output(int_input_err, red)
 			return 0
 		}
 		return user_input
@@ -546,7 +624,7 @@ func int_user_input(topic string) int {
 		fmt.Print(topic)
 		_, err := fmt.Scanln(&user_input)
 		if err != nil {
-			printError(str_input_err)
+			printError(int_input_err)
 			return 0
 		}
 		return user_input

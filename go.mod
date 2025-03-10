@@ -1,2 +1,2 @@
-module Test_runner_2-2-1
+module Test_runner_2-3-2
 go 1.23.3
