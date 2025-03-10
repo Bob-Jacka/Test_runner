@@ -9,9 +9,9 @@ Test runner architecture:
 									main
                                  Atos | Atos
                                    /     \
-                           game_tests   get_results -> write_results_to_file -> print_results_to_file -> __write_string__
+                           object_tests   get_results -> write_results_to_file -> print_results_to_file -> __write_string__
 									  |
-                  ______________suit_proceed, print{Error, MSG}, recreate_slice..., colored_txt_output
+                  ______________suit_proceed, print{Error}, recreate_slice..., colored_txt_output
                  /                /     \
      write_problems  str_user_input     int_user_input
                            |
@@ -21,7 +21,7 @@ Test runner architecture:
                         |
                print_results_to_console
 
-"\ / | ->" - означает передачу управления нижележащей функции.
+"\ / | ->" - элементы означают передачу управления нижележащей функции.
 */
 
 package main
@@ -89,10 +89,10 @@ const (
 	comp_arch     = "\tComputer arch at time is "
 	max_processes = "\tMax available processors are "
 
-	app_version = "2.3.2" // Версия приложения
+	app_version = "2.4.2" // Версия приложения
 )
 
-// Определенный типы для программы.
+// Определенные типы для программы.
 type (
 
 	/*
@@ -100,28 +100,16 @@ type (
 			Используется в цветном выводе в консоль
 	*/
 	Color string
-
-	/*
-		Структура с этапами.
-	*/
-	test_stages_struct struct {
-		stages []string
-	}
-
-	/*
-		Структура с результатами каждой игры.
-	*/
-	test_results_struct struct {
-		devices          []string
-		every_device_res []string
-	}
 )
 
+/*
+Основные глобальные переменные.
+*/
 var (
-	test_results [][]string // Первый массив - игра, второй массив - результаты тестов каждой игры.
+	test_results [][]string // Первый массив - объект тестирования, второй массив - результаты тестов каждого объекта.
 	test_stages  []string   // Этапы тестирования.
 
-	playsments_list []string // Список, в котором содержатся устройства для тестирования.
+	devices_list []string // Список, в котором содержатся устройства для тестирования.
 
 	start_time time.Time // Время начала тестирования.
 	end_time   time.Time // Время конца тестирования.
@@ -135,7 +123,7 @@ var (
 Принимает аргументы консоли и на их основании делает дальнейшее выполнение.
 */
 func main() {
-	var args_len = len(os.Args) - 1 // минус 1, потому что 1 аргумент это имя файла.
+	var args_len = len(os.Args) - 1 // минус 1, потому что 1-й аргумент это имя файла.
 	switch args_len {
 	case 0:
 		colored_txt_output("Utility usage:", blue)
@@ -143,12 +131,12 @@ func main() {
 		colored_txt_output("*Optional arg - Second cli argument is <Devices List>", blue)
 		colored_txt_output("*Optional arg - Third cli argument is <true / false write results to file>", blue)
 	case 1:
-		game_tests(os.Args[1], none_type)
+		object_tests(os.Args[1], none_type)
 	case 2:
-		game_tests(os.Args[1], os.Args[2])
+		object_tests(os.Args[1], os.Args[2])
 		get_results(false)
 	case 3:
-		game_tests(os.Args[1], os.Args[2])
+		object_tests(os.Args[1], os.Args[2])
 		get_results(Atob(os.Args[3]))
 	default:
 		colored_txt_output(wrong_arg, red)
@@ -163,23 +151,24 @@ func main() {
 Более общая функция для тестирования.
 Комбинирует устройства с тестовыми наборами и проводит для каждого устройства тестовый набор.
 */
-func game_tests(game_stages_cli string, games_devices_cli string) {
+func object_tests(object_stages_cli string, object_devices_cli string) {
 	start_time = time.Now()
 
-	test_stages = Atos(game_stages_cli, false)
+	test_stages = Atos(object_stages_cli, false)
 	tests_count = len(test_stages)
-	playsments_list = Atos(games_devices_cli, true)
+	devices_list = Atos(object_devices_cli, true)
 	if devices_count != 0 {
-		test_results = recreate_double_slice(games_devices_cli)
+		test_results = recreate_double_slice(object_devices_cli)
 	} else {
 		colored_txt_output(test_res_error, red)
 		os.Exit(1)
 	}
 
-	for device_num := 0; device_num < len(playsments_list); device_num++ {
-		colored_txt_output(strings.ToUpper(playsments_list[device_num]), blue)
+	for device_num := 0; device_num < len(devices_list); device_num++ {
+		colored_txt_output(strings.ToUpper(devices_list[device_num]), blue)
 		suit_proceed(device_num)
 	}
+
 	end_time = time.Now()
 }
 
@@ -203,8 +192,6 @@ func suit_proceed(device_num int) {
 		} else if !bool_res {
 			var problems = write_problems(on_bug_msg, red)
 			stages_result[stage_num] = test_stages[stage_num] + " - " + problems
-		} else {
-			//
 		}
 	}
 	test_results[device_num] = append(stages_result)
@@ -213,6 +200,7 @@ func suit_proceed(device_num int) {
 
 /*
 Функция для распоряжения отображением результатов тестирования.
+Возможные варианты - отображение в консоль или запись в файл.
 */
 func get_results(is_write_to_file bool) {
 	if !is_write_to_file {
@@ -229,8 +217,8 @@ func get_results(is_write_to_file bool) {
 func print_results_to_console() {
 	fmt.Println()
 	for playsment_num := 0; playsment_num < len(test_results); playsment_num++ {
-		if playsment_num < len(playsments_list) {
-			colored_txt_output(strings.ToUpper(playsments_list[playsment_num]), blue)
+		if playsment_num < len(devices_list) {
+			colored_txt_output(strings.ToUpper(devices_list[playsment_num]), blue)
 			for stage := 0; stage < len(test_results[playsment_num]); stage++ {
 				var res = test_results[playsment_num][stage]
 				if res != "" {
@@ -240,12 +228,12 @@ func print_results_to_console() {
 		}
 	}
 	var testing_duration = end_time.Sub(start_time)
-	printMSG("", "")
+	fmt.Println()
 	colored_txt_output(spend_time_on_test, yellow)
 	colored_txt_output(hours+strconv.FormatFloat(testing_duration.Hours(), 'f', 0, 64), yellow)
 	colored_txt_output(minutes+strconv.FormatInt(int64(testing_duration.Minutes()), 5), yellow)
 	colored_txt_output(seconds+strconv.FormatFloat(testing_duration.Seconds(), 'f', 2, 64), yellow)
-	printMSG("", "")
+	fmt.Println()
 	colored_txt_output(other_info, yellow)
 	colored_txt_output(go_comp+runtime.Compiler, yellow)
 	colored_txt_output(comp_arch+runtime.GOARCH, yellow)
@@ -263,7 +251,7 @@ func write_results_to_file() {
 		os.Exit(1)
 		return
 	} else {
-		go print_results_to_file(file)
+		print_results_to_file(file)
 	}
 	defer func(file *os.File) {
 		err2 := file.Close()
@@ -280,54 +268,55 @@ func print_results_to_file(fd *os.File) {
 	fmt.Println()
 	for device_counter := 0; device_counter < devices_count; device_counter++ {
 		fmt.Println(cReset)
-		colored_txt_output(strings.ToUpper(playsments_list[device_counter]), blue)
-		__write_string__(fd, strings.ToUpper(playsments_list[device_counter]))
+		colored_txt_output(strings.ToUpper(devices_list[device_counter]), blue)
+		__write_string__(fd, strings.ToUpper(devices_list[device_counter]), true)
 		for stage := 0; stage < len(test_results[device_counter]); stage++ {
 			var res = test_results[device_counter][stage]
 			if res != "" {
 				colored_txt_output("\t"+res, blue)
-				__write_string__(fd, "\t"+res)
+				__write_string__(fd, "\t"+res, true)
 			}
 		}
 	}
 	var duration = end_time.Sub(start_time)
 	fmt.Println()
+	__write_string__(fd, "\n", false)
 	colored_txt_output(spend_time_on_test, yellow)
-	__write_string__(fd, spend_time_on_test)
+	__write_string__(fd, spend_time_on_test, true)
 
 	colored_txt_output(hours, yellow)
-	__write_string__(fd, hours)
+	__write_string__(fd, hours, false)
 
 	colored_txt_output(duration.Hours(), yellow)
-	__write_string__(fd, strconv.FormatFloat(duration.Hours(), 'f', 2, 64))
+	__write_string__(fd, strconv.FormatFloat(duration.Hours(), 'f', 2, 64), true)
 
 	colored_txt_output(minutes, yellow)
-	__write_string__(fd, minutes)
+	__write_string__(fd, minutes, false)
 
 	colored_txt_output(duration.Minutes(), yellow)
-	__write_string__(fd, strconv.FormatInt(int64(duration.Minutes()), 10))
+	__write_string__(fd, strconv.FormatInt(int64(duration.Minutes()), 10), true)
 
 	colored_txt_output(seconds, yellow)
-	__write_string__(fd, seconds)
+	__write_string__(fd, seconds, false)
 
 	colored_txt_output(duration.Seconds(), yellow)
-	__write_string__(fd, strconv.FormatFloat(duration.Seconds(), 'f', 2, 64))
+	__write_string__(fd, strconv.FormatFloat(duration.Seconds(), 'f', 2, 64), true)
 
 	fmt.Println()
 	colored_txt_output(other_info, yellow)
-	__write_string__(fd, other_info)
+	__write_string__(fd, other_info, true)
 
 	colored_txt_output(go_comp+runtime.Compiler, yellow)
-	__write_string__(fd, go_comp+runtime.Compiler)
+	__write_string__(fd, go_comp+runtime.Compiler, true)
 
 	colored_txt_output(comp_arch+runtime.GOARCH, yellow)
-	__write_string__(fd, comp_arch+runtime.GOARCH)
+	__write_string__(fd, comp_arch+runtime.GOARCH, true)
 
 	colored_txt_output(max_processes, yellow)
-	__write_string__(fd, max_processes)
+	__write_string__(fd, max_processes, false)
 
 	fmt.Println(runtime.GOMAXPROCS(runtime.NumCPU()))
-	__write_string__(fd, strconv.FormatInt(int64(runtime.GOMAXPROCS(runtime.NumCPU())), 10))
+	__write_string__(fd, strconv.FormatInt(int64(runtime.GOMAXPROCS(runtime.NumCPU())), 10), false)
 }
 
 /*
@@ -351,11 +340,17 @@ func reverse_scan(scan_val string) bool {
 /*
 Приватная функция для ввода строки в файл.
 Обрабатывает ошибки.
+Fd - Файловый дескриптор.
+Str - Строка для ввода в файл.
+Is_newline - Необходимо ли переносить строку после ввода текста в файл.
 */
-func __write_string__(fd *os.File, str string) {
+func __write_string__(fd *os.File, str string, is_newline bool) {
 	_, err := fd.WriteString(str)
+	if is_newline {
+		_, err = fd.WriteString("\n")
+	}
 	if err != nil {
-		return
+		colored_txt_output("Error occurred while low level writing to file: "+err.Error(), blue)
 	}
 }
 
@@ -461,7 +456,7 @@ func Atos(str string, increm bool) []string {
 		}
 	} else {
 		devices_count = 1 // Делаем количество устройств равным 1, если устройство не передано.
-		return []string{"Single_Device"}
+		return []string{"Single_Device_Testing"}
 	}
 }
 
@@ -469,6 +464,7 @@ func Atos(str string, increm bool) []string {
 Функция выполняет открытие файла и читает его содержимое (построчно).
 Возвращается содержимое файла.
 Increm - параметр, означающий необходимо ли увеличивать число устройств.
+Path - путь до файла.
 */
 func proceed_file(path string, increm bool) []string {
 	var file, err = os.Open(path)
@@ -479,16 +475,26 @@ func proceed_file(path string, increm bool) []string {
 		}
 		os.Exit(1)
 	}
-	var read_array []string
+	var main_suit []string
 	var reader = bufio.NewReader(file)
 	var scanner = bufio.NewScanner(reader)
 
 	for scanner.Scan() {
-		line := scanner.Text() //строка
-		if len(line) > 0 && !str_starts_with(line) {
-			read_array = append(read_array, line)
-			if increm {
-				devices_count++
+		line := scanner.Text()
+		if len(line) > 0 {
+			if str_starts_with_another_suit(line) {
+				colored_txt_output("Nested suit detected", green)
+				var nested_suit = proceed_file(strings.Replace(line, nested_suit, "", 1), false)
+				if nested_suit != nil && len(nested_suit) > 0 {
+					main_suit = append(main_suit, nested_suit...)
+				} else {
+					colored_txt_output(fail_on_file_action, red)
+				}
+			} else if !str_starts_with_ignore(line) {
+				main_suit = append(main_suit, line)
+				if increm {
+					devices_count++
+				}
 			}
 		}
 	}
@@ -498,11 +504,12 @@ func proceed_file(path string, increm bool) []string {
 			colored_txt_output(fail_on_file_action, red)
 		}
 	}(file)
-	return read_array
+	return main_suit
 }
 
 /*
 Функция для загрузки информации о прохождении тестирования.
+Возвращает последний тест из сохраненного результата.
 */
 func load_progress() string {
 	var file, err = os.Open(file_name_ext)
@@ -532,10 +539,18 @@ func load_progress() string {
 }
 
 /*
-Функция для проверки наличия первым символом другого символа.
+Функция для проверки наличия первым символом - символа игнорирования строки.
+Возвращает true - если строка начинается с символа игнорирования, false - если не начинается.
 */
-func str_starts_with(source string) bool {
+func str_starts_with_ignore(source string) bool {
 	return strings.Contains(source, ignore_line) && strings.Index(source, ignore_line) == 0
+}
+
+/*
+Функция проверки того, что строка это вложенный набор тестов.
+*/
+func str_starts_with_another_suit(source string) bool {
+	return strings.Contains(source, nested_suit) && strings.Index(source, nested_suit) == 0
 }
 
 /*
@@ -543,15 +558,6 @@ func str_starts_with(source string) bool {
 */
 func printError(msg any) {
 	fmt.Println(msg, red)
-}
-
-/*
-Вывод сообщения независимо от цвета.
-*/
-func printMSG(str any, clr Color) {
-	fmt.Print(cReset)
-	fmt.Println(clr, str)
-	fmt.Print(cReset)
 }
 
 /*
