@@ -6,6 +6,7 @@
 package main
 
 import (
+	ta "Test_runner_3-5-3/Test_artifacts"
 	"fmt"
 	"time"
 )
@@ -27,15 +28,27 @@ type (
 
 	/*
 		    Пользовательский тип для массива строк.
-			Используется для сохранения данных о тестировании.
+			Используется для сохранения данных о устройств тестирования.
 	*/
 	StringContainer = []string
+
+	/*
+		    Пользовательский тип для массива строк.
+			Используется для сохранения данных о тестировании.
+	*/
+	TestCaseContainer = []ta.TestCase
+
+	/*
+		Пользовательский тип для сохранения багов.
+		Используется для сохранения данных о багах в тестировании.
+	*/
+	BugContainer = []ta.Bug
 
 	/*
 		    Пользовательский тип для двойного массива строк.
 			Используется для сохранения данных о тестировании.
 	*/
-	DoubleStringContainer = [][]string
+	DoubleTestCaseContainer = map[string][]ta.Test_result
 )
 
 /*
@@ -55,12 +68,15 @@ const (
 	user_input_sign = ">> "
 	skip_test       = "skip"
 	help_test       = "help"
+	out_prog        = "out"
 
 	default_success_result = " - No errors"
 	default_skipped_result = " - TEST SKIPPED"
 
-	ignore_line_sign = "*" // Ignore line in test suit if it starts with this sign.
-	nested_suit_sign = "$" // Represents line is test suit as another test suit if it starts with this sign.
+	ignore_line_sign     = "*" // Ignore line in test suit if it starts with this sign.
+	nested_suit_sign     = "$" // Represents line is test suit as another test suit if it starts with this sign.
+	multiline_test_sign  = "/" // Represents if test name consists of several lines.
+	test_case_split_sign = "|" // Символ для разделения строки в тестовом наборе на тест кейс.
 
 	fail_check_file     = "Error occurred in checking file."
 	fail_check_dir      = "Error occurred in checking dir."
@@ -76,32 +92,32 @@ const (
 	file_name_ext = "results.txt"
 
 	every_test_msg = "Enter (yes, 1) if success or (no, 0) for no if not or skip to skip."
-	on_bug_msg     = "Write down what was wrong: "
+	on_bug_msg     = "Напишите, что было не так: "
 	on_save_msg    = "Saving in file."
-	wrong_arg      = "Wrong argument, try again."
+	wrong_arg      = "Неправильный аргумент, попробуйте снова."
 
 	spend_time_on_test        = "Времени на тестирование ушло: "
-	hours                     = "\tHours - "
-	minutes                   = "\tMinutes - "
-	seconds                   = "\tSeconds - "
+	hours                     = "\tЧасов - "
+	minutes                   = "\tМинут - "
+	seconds                   = "\tСекунд - "
 	none_type          string = "None"
 
-	other_info    = "Other info:"
-	go_comp       = "\tGo compiler is "
-	comp_arch     = "\tComputer arch at time is "
-	max_processes = "\tMax available processors are "
+	other_info    = "Другая информация:"
+	go_comp       = "\tКомпилятор Go - "
+	comp_arch     = "\tКомпьютерная архитектура - "
+	max_processes = "\tМаксимальное число процессоров - "
 
-	app_version = "2.5.2" // Версия приложения. Используется для вывода версии в help функции.
+	app_version = "3.5.3" // Версия приложения. Используется для вывода версии в help функции.
 )
 
 /*
 Основные глобальные переменные.
 */
 var (
-	test_results DoubleStringContainer // Первый массив - объект тестирования, второй массив - результаты тестов каждого объекта.
-	test_stages  StringContainer       // Этапы тестирования.
-
-	devices_list StringContainer // Список, в котором содержатся устройства для тестирования.
+	test_results  DoubleTestCaseContainer // Карта - строка \ ключ. Ключ - объект тестирования, Значение - результаты тестов каждого объекта.
+	test_stages   TestCaseContainer       // Массив тест-кейсов. Этапы тестирования.
+	bug_container BugContainer
+	devices_list  StringContainer // Список, в котором содержатся устройства для тестирования.
 
 	start_time TimeType // Время начала тестирования.
 	end_time   TimeType // Время конца тестирования.

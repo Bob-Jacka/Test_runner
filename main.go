@@ -22,12 +22,19 @@ Test runner architecture:
                print_results_to_console
 
 "\ / | ->" - элементы означают передачу управления нижележащей функции.
+
+Правила:
+1) Функции, содержащие несколько слов должны называться с маленькой буквы с содержать нижнее подчеркивание для разделения слов.
+2) Методы для типов называются с помощью camelCase.
+3) Пользовательские типы также пишутся с помощью camelCase.
 */
 
 package main
 
 import (
+	ta "Test_runner_3-5-3/Test_artifacts"
 	"os"
+	"strings"
 )
 
 /*
@@ -36,19 +43,23 @@ import (
 */
 func main() {
 	var args_len = len(os.Args) - 1 // минус 1, потому что 1-й аргумент это имя файла.
-
 	switch args_len {
 	case 0:
-		colored_txt_output("Utility usage:", blue)
-		colored_txt_output("First cli argument is <test_suit>", blue)
-		colored_txt_output("*Optional arg - Second cli argument is <devices_list>", blue)
-		colored_txt_output("*Optional arg - Third cli argument is <true / false> - write results to file", blue)
-		colored_txt_output("And optionally you can enter flag '-colored' to colored input in console", blue)
+		colored_txt_output("Использование утилиты:", blue)
+		colored_txt_output("Первый аргумент командной строки - <тестовые наборы>", blue)
+		colored_txt_output("*Optional arg - Второй аргумент командной строки - <список устройств>", blue)
+		colored_txt_output("*Optional arg - Третий аргумент командной строки - <true / false> - write results to file", blue)
 	case 1:
 		object_tests(os.Args[1], none_type)
 	case 2:
-		object_tests(os.Args[1], os.Args[2])
-		get_results(false)
+		var sec_value = Atob(os.Args[2])
+		if sec_value {
+			object_tests(os.Args[1], none_type)
+			get_results(sec_value)
+		} else {
+			object_tests(os.Args[1], os.Args[2])
+			get_results(false)
+		}
 	case 3:
 		object_tests(os.Args[1], os.Args[2])
 		get_results(Atob(os.Args[3]))
@@ -62,13 +73,15 @@ func main() {
 /*
 Более общая функция для тестирования.
 Комбинирует устройства с тестовыми наборами и проводит для каждого устройства тестовый набор.
+Object_stages_cli - строка, которая будет использоваться для этапов тестирования.
+Object_devices_cli - строка, которая будет использоваться для объектов тестирования.
 */
 func object_tests(object_stages_cli string, object_devices_cli string) {
 	start_time = get_now_time()
 
-	test_stages = Atos(object_stages_cli, false)
+	test_stages = Atos(object_stages_cli)
 	tests_count = uint32(len(test_stages))
-	devices_list = Atos(object_devices_cli, true)
+	devices_list = get_devices(object_devices_cli)
 	if devices_count != 0 {
 		test_results = recreate_double_slice(object_devices_cli)
 	} else {
@@ -76,9 +89,9 @@ func object_tests(object_stages_cli string, object_devices_cli string) {
 		os.Exit(1)
 	}
 
-	for device_num := 0; device_num < len(devices_list); device_num++ {
-		colored_txt_output(to_upper(devices_list[device_num]), blue)
-		suit_proceed(device_num)
+	for _, device := range devices_list {
+		colored_txt_output(to_upper(device), blue)
+		suit_proceed(device)
 	}
 
 	end_time = get_now_time()
@@ -88,24 +101,58 @@ func object_tests(object_stages_cli string, object_devices_cli string) {
 Главная функция для тестирования.
 Предоставляет тест из набора и запрашивает пользовательский ввод для результата.
 Применяется для одного устройства.
+Device_name - имя устройства, на котором происходит тестирование.
 */
-func suit_proceed(device_num int) {
-	var stages_result = make(StringContainer, tests_count)
+func suit_proceed(device_name string) {
+	var stages_result = make([]ta.Test_result, tests_count)
+outerLabel:
 	for stage_num := 0; stage_num < len(test_stages); stage_num++ {
-		colored_txt_output(to_upper(test_stages[stage_num]), white)
-		colored_txt_output("\t"+every_test_msg, blue)
+		var current_test_case = test_stages[stage_num]
 
-		var user_input = str_user_input("", green)
-		var bool_res = reverse_scan(user_input)
-		if bool_res == true {
-			stages_result[stage_num] = test_stages[stage_num] + default_success_result
-		} else if !bool_res && (user_input == skip_test || user_input == "") { // Был баг, если нажать перенос строки и затем валидный токен, то переносило в секцию багов.
-			stages_result[stage_num] = test_stages[stage_num] + default_skipped_result
-		} else if !bool_res {
-			var problems = write_problems(on_bug_msg, red)
-			stages_result[stage_num] = test_stages[stage_num] + " - " + problems
+		if strings.Compare(current_test_case.GetName(), ta.Undefined_field) != -1 {
+			colored_txt_output(to_upper(current_test_case.GetName()), white)
+			colored_txt_output("\t"+every_test_msg, blue)
+
+			var user_input = str_user_input("", green, current_test_case.Name, device_name)
+			var bool_res = reverse_scan(user_input)
+
+			if user_input == out_prog && bool_res == false {
+				break outerLabel
+			} else {
+				if bool_res == true {
+					stages_result[stage_num] = ta.Test_result{
+						Result:  ta.Success,
+						Device:  device_name,
+						Message: test_stages[stage_num].Name + default_success_result,
+					}
+
+				} else if !bool_res && (user_input == skip_test || user_input == "") {
+					stages_result[stage_num] = ta.Test_result{
+						Result:  ta.Skipped,
+						Device:  device_name,
+						Message: test_stages[stage_num].Name + default_skipped_result,
+					}
+
+				} else if !bool_res {
+					var problems = write_problems(on_bug_msg)
+					var bug = ta.Bug{
+						Name:     write_problems("Введите название бага: "),
+						Priority: write_problems("Введите приоритет бага: "),
+						Severity: write_problems("Введите важность бага: "),
+						Msg:      problems,
+					}
+					bug_container = append(bug_container, bug)
+					stages_result[stage_num] = ta.Test_result{
+						Result:  ta.Failed,
+						Device:  device_name,
+						Message: test_stages[stage_num].Name + " - " + problems,
+					}
+				}
+			}
+		} else {
+			colored_txt_output("Пустой или невалидный тест кейс обнаружен", red)
 		}
 	}
-	test_results[device_num] = append(stages_result)
-	stages_result = recreate_slice2()
+	test_results[device_name] = append(stages_result)
+	stages_result = recreate_slice3()
 }
