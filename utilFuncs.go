@@ -6,7 +6,7 @@
 package main
 
 import (
-	ta "Test_runner_3-5-3/Test_artifacts"
+	ta "Test_runner_3-5-4/Test_artifacts"
 	"bufio"
 	"fmt"
 	"io"
@@ -60,8 +60,9 @@ func print_results_to_console() {
 		colored_txt_output(strings.ToUpper(devices_list[idx]), blue)
 		for stage := 0; stage < len(test_results[device]); stage++ {
 			var res = test_results[device][stage]
-			if res.Message != "" {
-				colored_txt_output("\t"+res.Message, blue)
+			var msg = res.GetMessage()
+			if msg != "" {
+				colored_txt_output("\t"+msg, blue)
 			}
 		}
 	}
@@ -111,9 +112,10 @@ func print_results_to_file(fd File) {
 		if test_results[device] != nil {
 			for stage := 0; stage < len(test_results[device]); stage++ {
 				var res = test_results[device][stage]
-				if res.Message != "" {
-					colored_txt_output("\t"+res.Message, blue)
-					__write_string__(fd, "\t"+res.Message, true)
+				var msg = res.GetMessage()
+				if msg != "" {
+					colored_txt_output("\t"+msg, blue)
+					__write_string__(fd, "\t"+msg, true)
 				}
 			}
 		} else {
@@ -207,7 +209,7 @@ func __write_string__(fd File, str string, is_newline bool) {
 Save_point - название теста для сохранения.
 Save_point_device - название устройства для сохранения.
 */
-func help_menu(save_point_msg string, save_point_device string) { //TODO.txt передавать не просто строку, а массив, где первое значение это устройство, а второе значение название теста
+func help_menu(save_point_msg string, save_point_device string) {
 	colored_txt_output("Действия:", white)
 	colored_txt_output("1. Сохранить прогресс,", white)
 	colored_txt_output("2. Загрузить прогресс,", white)
@@ -293,7 +295,6 @@ func Atob(str string) bool {
 		return false
 	default:
 		colored_txt_output(wrong_arg, red)
-		os.Exit(1)
 		return false
 	}
 }

@@ -50,7 +50,7 @@ func (tc TestCase) GetSeverity() string {
 }
 
 func (tc TestCase) Print() {
-	fmt.Println(tc.Name)
+	fmt.Println("Имя тест кейса: " + tc.Name)
 }
 
 func (tc TestCase) GetMessage() string {

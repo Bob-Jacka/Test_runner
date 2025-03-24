@@ -32,9 +32,8 @@ Test runner architecture:
 package main
 
 import (
-	ta "Test_runner_3-5-3/Test_artifacts"
+	ta "Test_runner_3-5-4/Test_artifacts"
 	"os"
-	"strings"
 )
 
 /*
@@ -46,16 +45,16 @@ func main() {
 	switch args_len {
 	case 0:
 		colored_txt_output("Использование утилиты:", blue)
-		colored_txt_output("Первый аргумент командной строки - <тестовые наборы>", blue)
-		colored_txt_output("*Optional arg - Второй аргумент командной строки - <список устройств>", blue)
-		colored_txt_output("*Optional arg - Третий аргумент командной строки - <true / false> - write results to file", blue)
+		colored_txt_output("Первый аргумент командной строки - <тестовые наборы>,", blue)
+		colored_txt_output("*Optional arg - Второй аргумент командной строки - <список устройств>,", blue)
+		colored_txt_output("*Optional arg - Третий аргумент командной строки - <true / false> - запись в файл.", blue)
 	case 1:
 		object_tests(os.Args[1], none_type)
 	case 2:
-		var sec_value = Atob(os.Args[2])
-		if sec_value {
+		var is_bool_value = Atob(os.Args[2]) // Проверка на то, что второй аргумент это булево значение.
+		if is_bool_value {
 			object_tests(os.Args[1], none_type)
-			get_results(sec_value)
+			get_results(is_bool_value)
 		} else {
 			object_tests(os.Args[1], os.Args[2])
 			get_results(false)
@@ -85,7 +84,7 @@ func object_tests(object_stages_cli string, object_devices_cli string) {
 	if devices_count != 0 {
 		test_results = recreate_double_slice(object_devices_cli)
 	} else {
-		colored_txt_output(test_res_error, red)
+		colored_txt_output("Devices count cannot be 0.", red)
 		os.Exit(1)
 	}
 
@@ -109,7 +108,7 @@ outerLabel:
 	for stage_num := 0; stage_num < len(test_stages); stage_num++ {
 		var current_test_case = test_stages[stage_num]
 
-		if strings.Compare(current_test_case.GetName(), ta.Undefined_field) != -1 {
+		if current_test_case.GetName() != ta.Undefined_field {
 			colored_txt_output(to_upper(current_test_case.GetName()), white)
 			colored_txt_output("\t"+every_test_msg, blue)
 
@@ -150,7 +149,7 @@ outerLabel:
 				}
 			}
 		} else {
-			colored_txt_output("Пустой или невалидный тест кейс обнаружен", red)
+			colored_txt_output("Пустой или невалидный тест кейс обнаружен.", red)
 		}
 	}
 	test_results[device_name] = append(stages_result)

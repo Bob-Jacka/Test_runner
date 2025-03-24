@@ -6,7 +6,7 @@
 package main
 
 import (
-	ta "Test_runner_3-5-3/Test_artifacts"
+	ta "Test_runner_3-5-4/Test_artifacts"
 	"fmt"
 	"time"
 )
@@ -79,15 +79,12 @@ const (
 	test_case_split_sign = "|" // Символ для разделения строки в тестовом наборе на тест кейс.
 
 	fail_check_file     = "Error occurred in checking file."
-	fail_check_dir      = "Error occurred in checking dir."
 	fail_on_write       = "Error occurred in writing file."
 	fail_on_file_action = "Error occurred during file action."
 
 	str_input_err      = "Error occurred in str_user_input."
 	write_problems_err = "Error occurred in write_problems."
 	int_input_err      = "Error occurred in int_user_input."
-
-	test_res_error = "An error occurred in making array test_results."
 
 	file_name_ext = "results.txt"
 
@@ -107,7 +104,7 @@ const (
 	comp_arch     = "\tКомпьютерная архитектура - "
 	max_processes = "\tМаксимальное число процессоров - "
 
-	app_version = "3.5.3" // Версия приложения. Используется для вывода версии в help функции.
+	app_version = "3.5.4" // Версия приложения. Используется для вывода версии в help функции.
 )
 
 /*

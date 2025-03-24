@@ -39,7 +39,7 @@ func (b Bug) GetSeverity() string {
 }
 
 func (b Bug) print() {
-	fmt.Println(b.Name)
+	fmt.Println("Имя бага: " + b.Name)
 }
 
 func (b Bug) GetMessage() string {

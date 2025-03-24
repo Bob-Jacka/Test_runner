@@ -8,7 +8,7 @@ type Test_result struct {
 	Message string
 }
 
-func (tr Test_result) getResult() int {
+func (tr Test_result) GetResult() int {
 	if tr.Result != 0 {
 		return tr.Result
 	} else {
@@ -16,7 +16,7 @@ func (tr Test_result) getResult() int {
 	}
 }
 
-func (tr Test_result) getDevice() string {
+func (tr Test_result) GetDevice() string {
 	if tr.Device != "" {
 		return tr.Device
 	} else {
@@ -24,7 +24,7 @@ func (tr Test_result) getDevice() string {
 	}
 }
 
-func (tr Test_result) getMessage() string {
+func (tr Test_result) GetMessage() string {
 	if tr.Message != "" {
 		return tr.Message
 	} else {
