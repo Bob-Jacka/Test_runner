@@ -7,10 +7,10 @@ import (
 
 // Константные обозначения полей тест кейса.
 const (
-	name_field     = "Name"
-	priority_field = "Priority"
-	severity_field = "Severity"
-	msg_field      = "Msg"
+	Name_field     = "Name"
+	Priority_field = "Priority"
+	Severity_field = "Severity"
+	Msg_field      = "Msg"
 
 	Undefined_field = "UNDEFINED" //Обозначение для полей тест кейса в случае ошибки.
 )
@@ -68,13 +68,13 @@ func (tc TestCase) GetMessage() string {
 func Construct_test_case(inner_struct map[string]string) (TestCase, error) {
 	if inner_struct != nil {
 		return TestCase{
-			Name:     inner_struct[name_field],
-			Priority: inner_struct[priority_field],
-			Severity: inner_struct[severity_field],
-			Msg:      inner_struct[msg_field],
+			Name:     inner_struct[Name_field],
+			Priority: inner_struct[Priority_field],
+			Severity: inner_struct[Severity_field],
+			Msg:      inner_struct[Msg_field],
 		}, nil
 	} else {
-		fmt.Println("Test case cannot be created.")
+		fmt.Println("\tTest case cannot be created.")
 		return TestCase{
 			Name:     Undefined_field,
 			Priority: Undefined_field,

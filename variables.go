@@ -6,7 +6,7 @@
 package main
 
 import (
-	ta "Test_runner_3-5-4/Test_artifacts"
+	ta "Test_runner_3-5-5/Test_artifacts"
 	"fmt"
 	"time"
 )
@@ -86,7 +86,8 @@ const (
 	write_problems_err = "Error occurred in write_problems."
 	int_input_err      = "Error occurred in int_user_input."
 
-	file_name_ext = "results.txt"
+	file_name_ext  = "results.txt"
+	save_file_name = "save_point.txt"
 
 	every_test_msg = "Enter (yes, 1) if success or (no, 0) for no if not or skip to skip."
 	on_bug_msg     = "Напишите, что было не так: "
@@ -104,7 +105,7 @@ const (
 	comp_arch     = "\tКомпьютерная архитектура - "
 	max_processes = "\tМаксимальное число процессоров - "
 
-	app_version = "3.5.4" // Версия приложения. Используется для вывода версии в help функции.
+	app_version = "3.5.5" // Версия приложения. Используется для вывода версии в help функции.
 )
 
 /*
@@ -113,8 +114,8 @@ const (
 var (
 	test_results  DoubleTestCaseContainer // Карта - строка \ ключ. Ключ - объект тестирования, Значение - результаты тестов каждого объекта.
 	test_stages   TestCaseContainer       // Массив тест-кейсов. Этапы тестирования.
+	devices_list  StringContainer         // Список, в котором содержатся устройства для тестирования.
 	bug_container BugContainer
-	devices_list  StringContainer // Список, в котором содержатся устройства для тестирования.
 
 	start_time TimeType // Время начала тестирования.
 	end_time   TimeType // Время конца тестирования.

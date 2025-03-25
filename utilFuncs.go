@@ -6,8 +6,9 @@
 package main
 
 import (
-	ta "Test_runner_3-5-4/Test_artifacts"
+	ta "Test_runner_3-5-5/Test_artifacts"
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -66,12 +67,12 @@ func print_results_to_console() {
 			}
 		}
 	}
-	var testing_duration = end_time.Sub(start_time)
+	var duration = end_time.Sub(start_time)
 	fmt.Println()
 	colored_txt_output(spend_time_on_test, yellow)
-	colored_txt_output(hours+strconv.FormatFloat(testing_duration.Hours(), 'f', 0, 64), yellow)
-	colored_txt_output(minutes+strconv.FormatInt(int64(testing_duration.Minutes()), 5), yellow)
-	colored_txt_output(seconds+strconv.FormatFloat(testing_duration.Seconds(), 'f', 2, 64), yellow)
+	colored_txt_output(hours+strconv.FormatFloat(duration.Hours(), 'f', 0, 64), yellow)
+	colored_txt_output(minutes+strconv.FormatInt(int64(duration.Minutes()), 5), yellow)
+	colored_txt_output(seconds+strconv.FormatFloat(duration.Seconds(), 'f', 2, 64), yellow)
 	fmt.Println()
 	colored_txt_output(other_info, yellow)
 	colored_txt_output(go_comp+runtime.Compiler, yellow)
@@ -182,7 +183,7 @@ func reverse_scan(scan_val string) bool {
 		return false
 	default:
 		colored_txt_output(wrong_arg, red)
-		var recurse_txt = str_user_input("", green, "НЕИЗВЕСТНО", "НЕИЗВЕСТНО")
+		var recurse_txt = str_user_input("", green, ta.Undefined_field, ta.Undefined_field)
 		return reverse_scan(recurse_txt)
 	}
 }
@@ -219,47 +220,51 @@ func help_menu(save_point_msg string, save_point_device string) {
 	colored_txt_output("6. Закрыть меню.", white)
 	fmt.Println("Введите номер действия:")
 	fmt.Print(user_input_sign)
-	var user_input = int_user_input("")
-	switch user_input {
-	case 1:
-		end_time = get_now_time()
-		var file, err = os.Create("save_point.txt")
-		if err != nil {
-			colored_txt_output("Error occurred while creating save point: "+err.Error(), red)
-		} else {
-			__write_string__(file, "Остановился здесь - "+save_point_msg+", Устройство - "+save_point_device, true)
-			err := file.Close()
+	var user_input, err = int_user_input("")
+	if err != nil {
+		switch user_input {
+		case 1:
+			end_time = get_now_time()
+			var file, err = os.Create(save_file_name)
 			if err != nil {
-				return
+				colored_txt_output("Error occurred while creating save point: "+err.Error(), red)
+			} else {
+				__write_string__(file, "Остановился здесь - "+save_point_msg+", Устройство - "+save_point_device, true)
+				err := file.Close()
+				if err != nil {
+					return
+				}
 			}
-		}
-		break
-	case 2:
-		colored_txt_output("Загрузка результатов тестирования", blue)
-		var loaded_string = load_progress()
-		colored_txt_output(loaded_string, green)
-		break
-	case 3:
-		if devices_count == 1 {
-			colored_txt_output("Получение результатов тестирования не доступно для режима одного устройства.", blue)
 			break
-		} else {
-			get_results(false)
+		case 2:
+			colored_txt_output("Загрузка результатов тестирования", blue)
+			var loaded_string = load_progress()
+			colored_txt_output(loaded_string, green)
+			break
+		case 3:
+			if devices_count == 1 {
+				colored_txt_output("Получение результатов тестирования не доступно для режима одного устройства.", blue)
+				break
+			} else {
+				get_results(false)
+			}
+			break
+		case 4:
+			for _, bug := range bug_container {
+				colored_txt_output("\tИмя бага: "+bug.Name, white)
+				colored_txt_output("\tПриоритет бага: "+bug.Priority, white)
+				colored_txt_output("\tВажность бага: "+bug.Severity, white)
+				colored_txt_output("\tВложенное сообщение: "+bug.Msg, white)
+				fmt.Println()
+			}
+		case 5:
+			colored_txt_output("Версия приложения - "+app_version, white)
+			break
+		case 6:
+			break
 		}
-		break
-	case 4:
-		for _, bug := range bug_container {
-			colored_txt_output("\tИмя бага: "+bug.Name, white)
-			colored_txt_output("\tПриоритет бага: "+bug.Priority, white)
-			colored_txt_output("\tВажность бага: "+bug.Severity, white)
-			colored_txt_output("\tВложенное сообщение: "+bug.Msg, white)
-			fmt.Println()
-		}
-	case 5:
-		colored_txt_output("Версия приложения - "+app_version, white)
-		break
-	case 6:
-		break
+	} else {
+		colored_txt_output("Error occurred while help menu input: "+err.Error(), red)
 	}
 }
 
@@ -307,8 +312,10 @@ func Atos(str string) TestCaseContainer {
 	if check_file(str) {
 		colored_txt_output("Argument is a file.", green)
 		return proceed_file_test_cases(str)
+	} else {
+		colored_txt_output("Returned empty TestCaseContainer.", red)
+		return nil
 	}
-	return nil
 }
 
 /*
@@ -317,25 +324,18 @@ Path - путь до файла с устройствами для тестир�
 */
 func get_devices(path string) StringContainer {
 	var file, err = os.Open(path)
-	if err != nil {
-		if path == none_type {
-			devices_count = 1
-			return StringContainer{"Single_device_mode"}
-		}
-		err := file.Close()
-		if err != nil {
-			colored_txt_output(fail_on_file_action, red)
-		}
-		os.Exit(1)
-	}
 	var main_suit StringContainer
-	var reader = bufio.NewReader(file)
-	var scanner = bufio.NewScanner(reader)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if len(line) > 0 && !str_starts_with_ignore(line) {
-			main_suit = append(main_suit, line)
+	if err != nil && path == none_type {
+		devices_count = 1
+		return StringContainer{"Single_device_mode"}
+	} else if err != nil && path != none_type {
+		var reader = bufio.NewReader(file)
+		var scanner = bufio.NewScanner(reader)
+		for scanner.Scan() {
+			line := scanner.Text()
+			if len(line) > 0 && !str_starts_with_ignore(line) {
+				main_suit = append(main_suit, line)
+			}
 		}
 	}
 	defer func(file File) {
@@ -382,7 +382,7 @@ func proceed_file_test_cases(path string) TestCaseContainer {
 				if !str_ends_with_multiline(line) {
 					main_suit = add_tc_to_test_case(main_suit, line)
 				} else {
-					main_suit = add_tc_to_test_case(main_suit, line)
+					main_suit = add_tc_to_test_case(main_suit, strings.ReplaceAll(line, "/", ""))
 				}
 			}
 		}
@@ -406,7 +406,7 @@ func add_tc_to_test_case(container TestCaseContainer, line string) TestCaseConta
 	var tc, _ = proceed_string_to_test_case(line)
 	var to_add, err = ta.Construct_test_case(tc)
 	if err != nil {
-		colored_txt_output("Error occurred during test case construct", red)
+		colored_txt_output("Error occurred during test case construct - "+err.Error(), red)
 	}
 	return append(container, to_add)
 }
@@ -420,14 +420,14 @@ func proceed_string_to_test_case(line string) (map[string]string, error) {
 	var line_split = strings.Split(line, test_case_split_sign)
 	if len(line_split) > 1 && strings.Contains(line, test_case_split_sign) {
 		var to_return = make(map[string]string, 4)
-		to_return["Name"] = line_split[0]
-		to_return["Priority"] = line_split[1]
-		to_return["Severity"] = line_split[2]
-		to_return["Msg"] = line_split[3]
+		to_return[ta.Name_field] = line_split[0]
+		to_return[ta.Priority_field] = line_split[1]
+		to_return[ta.Severity_field] = line_split[2]
+		to_return[ta.Msg_field] = line_split[3]
 		return to_return, nil
 	} else {
-		colored_txt_output("Error occurred during test case construct", red)
-		return nil, nil
+		colored_txt_output("Error occurred during proceed string to test case.", red)
+		return nil, errors.New("line length cannot be less than 1")
 	}
 }
 
@@ -472,7 +472,7 @@ func str_starts_with_ignore(source string) bool {
 }
 
 /*
-Функция проверки того, что строка это вложенный набор тестов.\
+Функция проверки того, что строка это вложенный набор тестов.
 Source - строка для проверки.
 */
 func str_starts_with_another_suit(source string) bool {
@@ -537,23 +537,23 @@ func write_problems(topic string) string {
 Функция для пользовательского ввода.
 Обрабатывает внутренние ошибки.
 */
-func int_user_input(topic string) int {
-	var user_input int
-	if topic != "" {
+func int_user_input(topic string) (int, error) {
+	var user_input string
+	if topic == "" {
 		_, err := fmt.Scanln(&user_input, cyan)
 		if err != nil && err.Error() != "unexpected newline" {
 			colored_txt_output(int_input_err, red)
-			return 0
+			return 0, err
 		}
-		return user_input
+		return strconv.Atoi(user_input)
 	} else {
 		fmt.Print(topic)
 		_, err := fmt.Scanln(&user_input)
-		if err != nil {
+		if err != nil && err.Error() != "unexpected newline" {
 			colored_txt_output(int_input_err, red)
-			return 0
+			return 0, err
 		}
-		return user_input
+		return strconv.Atoi(user_input)
 	}
 }
 

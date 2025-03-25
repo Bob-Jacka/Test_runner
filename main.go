@@ -32,7 +32,7 @@ Test runner architecture:
 package main
 
 import (
-	ta "Test_runner_3-5-4/Test_artifacts"
+	ta "Test_runner_3-5-5/Test_artifacts"
 	"os"
 )
 
