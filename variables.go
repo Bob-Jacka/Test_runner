@@ -6,7 +6,7 @@
 package main
 
 import (
-	ta "Test_runner_3-5-5/Test_artifacts"
+	ta "Test_runner/Test_artifacts"
 	"fmt"
 	"time"
 )
@@ -49,6 +49,29 @@ type (
 			Используется для сохранения данных о тестировании.
 	*/
 	DoubleTestCaseContainer = map[string][]ta.Test_result
+
+	/*
+		Структура с параметрами загрузки приложения.
+	*/
+	Load_params struct {
+
+		//Указываются файлы для тестирования:
+		Suit    string //В данном случае путь к файлам с тестами
+		Devices string //В данном случае путь к файлам с устройствами.
+
+		//Работа с файлом сохранения:
+		File_save bool //Необходимо ли сохранить файл.
+		File_load bool //Необходимо ли загрузить файл.
+
+		//Additional functionality
+		Tc_time  bool //Необходимо ли замерять время выполнения каждого тест-кейса.
+		Comments bool //Необходим ли вывод внутреннего сообщения у тест кейса.
+		Colored  bool //Необходим ли цветной вывод сообщений.
+
+		//Strategies:
+		High_prior bool //Необходимо ли запустить только тесты с высоким приоритетом.
+		Random_run bool //Рандомный запуск тестов.
+	}
 )
 
 /*
@@ -68,7 +91,7 @@ const (
 	user_input_sign = ">> "
 	skip_test       = "skip"
 	help_test       = "help"
-	out_prog        = "out"
+	out_prog        = "exit"
 
 	default_success_result = " - No errors"
 	default_skipped_result = " - TEST SKIPPED"
@@ -105,7 +128,7 @@ const (
 	comp_arch     = "\tКомпьютерная архитектура - "
 	max_processes = "\tМаксимальное число процессоров - "
 
-	app_version = "3.5.5" // Версия приложения. Используется для вывода версии в help функции.
+	app_version = "3.6.7" // Версия приложения. Используется для вывода версии в help функции.
 )
 
 /*
@@ -122,6 +145,8 @@ var (
 
 	devices_count uint32 = 0 // Количество устройств на которых должно быть проведено тестирование.
 	tests_count   uint32 = 0 // Количество тестов в тестовом наборе.
+
+	load_parameters = Load_params{} //Параметры загрузки приложения.
 )
 
 /*
@@ -132,7 +157,11 @@ func colored_txt_output(str any, clr Color) {
 	fmt.Print(cReset)
 	switch clr {
 	case red, yellow, green, blue, white, magenta, gray, cyan:
-		fmt.Println(clr, str)
+		if load_parameters.Colored {
+			fmt.Println(clr, str)
+		} else {
+			fmt.Println(str)
+		}
 	}
 	fmt.Print(cReset)
 }

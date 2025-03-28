@@ -2,7 +2,7 @@ package Test_artifacts
 
 // Структура для результата теста.
 type Test_result struct {
-	TestArtifact
+	ITestArtifact
 	Result  int
 	Device  string
 	Message string

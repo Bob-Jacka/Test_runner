@@ -1,3 +1,3 @@
-module Test_runner_3-5-5
+module Test_runner
 
 go 1.23.3

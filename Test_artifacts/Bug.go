@@ -7,7 +7,7 @@ import (
 // Bug
 // - Структура с данными для бага.
 type Bug struct {
-	TestArtifact
+	ITestArtifact
 	Name     string
 	Priority string
 	Severity string
