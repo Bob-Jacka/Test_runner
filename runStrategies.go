@@ -47,7 +47,7 @@ Iterator - итератор для применения стратегии.
 func (r Only_high_prior) run(iterator Iterator[ta.TestCase]) []ta.TestCase {
 	colored_txt_output("Используется стратегия запуска высокоприоритетных тестов.", blue)
 	return iterator.Filter(func(testCase ta.TestCase) bool {
-		if testCase.Priority == ta.Medium || testCase.Priority == ta.As_soon_as_possible {
+		if testCase.Priority == ta.High_prior || testCase.Priority == ta.As_soon_as_possible {
 			return true
 		}
 		return false

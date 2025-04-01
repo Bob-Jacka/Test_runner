@@ -75,6 +75,7 @@ func main() {
 		colored_txt_output("Валидные значения для приоритета:", blue)
 		colored_txt_output("\t"+ta.Low, blue)
 		colored_txt_output("\t"+ta.Medium, blue)
+		colored_txt_output("\t"+ta.High_prior, blue)
 		colored_txt_output("\t"+ta.As_soon_as_possible, blue)
 		colored_txt_output("Опционально - во время тестирования можно применять слова 'exit', 'help' для дополнительных действий.", blue)
 	case 1, 2, 3, 4, 5, 6, 7, 8, 9:

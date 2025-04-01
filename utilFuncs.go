@@ -67,6 +67,8 @@ func print_results_to_console() {
 			}
 		}
 	}
+	fmt.Println()
+	colored_txt_output(load_parameters.to_string(), yellow)
 	var duration = end_time.Sub(start_time)
 	fmt.Println()
 	colored_txt_output(spend_time_on_test, yellow)
@@ -124,6 +126,10 @@ func print_results_to_file(fd File) {
 			__write_string__(fd, "\tНабор тестов еще не закончен, вывод невозможен.", true)
 		}
 	}
+	fmt.Println()
+	colored_txt_output(load_parameters.to_string(), yellow)
+	__write_string__(fd, load_parameters.to_string(), true)
+
 	var duration = end_time.Sub(start_time)
 	fmt.Println()
 	__write_string__(fd, "\n", false)
@@ -231,6 +237,7 @@ func help_menu(current_tc *ta.TestCase, save_point_device string) {
 				colored_txt_output("Error occurred while creating save point: "+err.Error(), red)
 			} else {
 				__write_string__(file, "Остановился здесь - "+current_tc.Name+", Устройство - "+save_point_device, true)
+				__write_string__(file, load_parameters.to_string(), true)
 				err := file.Close()
 				if err != nil {
 					return
@@ -542,7 +549,7 @@ func choose_bug_severity() string {
 		case 1:
 			return ta.Trivial
 		case 2:
-			return ta.Low
+			return ta.Minor
 		case 3:
 			return ta.High
 		case 4:

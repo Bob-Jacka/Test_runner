@@ -75,6 +75,13 @@ type (
 )
 
 /*
+Функция для вывода параметров загрузки.
+*/
+func (l Load_params) to_string() string {
+	return fmt.Sprintf("Load_params:\n\ttest suit is %s,\n\trandom run is '%t',\n\thigh prior is '%t',\n\ttc_time is '%t',\n\tcomments is '%t',\n\tcolored is '%t'", l.Suit, l.Random_run, l.High_prior, l.Tc_time, l.Comments, l.Colored)
+}
+
+/*
 All valuable const.
 */
 const (
@@ -128,7 +135,7 @@ const (
 	comp_arch     = "\tКомпьютерная архитектура - "
 	max_processes = "\tМаксимальное число процессоров - "
 
-	app_version = "3.6.7" // Версия приложения. Используется для вывода версии в help функции.
+	app_version = "3.6.8" // Версия приложения. Используется для вывода версии в help функции.
 )
 
 /*
