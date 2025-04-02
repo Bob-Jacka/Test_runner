@@ -67,14 +67,25 @@ func print_results_to_console() {
 			}
 		}
 	}
-	fmt.Println()
+
+	if len(bug_container) > 0 {
+		colored_txt_output("\n", magenta)
+		colored_txt_output("Найденные баги:", magenta)
+		for _, elem := range bug_container {
+			colored_txt_output(elem.To_string(), magenta)
+		}
+	}
+
 	colored_txt_output(load_parameters.to_string(), yellow)
-	var duration = end_time.Sub(start_time)
 	fmt.Println()
 	colored_txt_output(spend_time_on_test, yellow)
-	colored_txt_output(hours+strconv.FormatFloat(duration.Hours(), 'f', 0, 64), yellow)
-	colored_txt_output(minutes+strconv.FormatInt(int64(duration.Minutes()), 5), yellow)
-	colored_txt_output(seconds+strconv.FormatFloat(duration.Seconds(), 'f', 2, 64), yellow)
+	var all_time = end_time.Sub(start_time).Seconds()
+	var minute_time = all_time / 60.0
+	var hour_time = all_time / 3600.0
+
+	colored_txt_output(hours+strconv.FormatFloat(hour_time, 'f', 0, 64), yellow)
+	colored_txt_output(minutes+strconv.FormatInt(int64(minute_time), 5), yellow)
+
 	fmt.Println()
 	colored_txt_output(other_info, yellow)
 	colored_txt_output(go_comp+runtime.Compiler, yellow)
@@ -132,7 +143,15 @@ func print_results_to_file(fd File) {
 
 	var duration = end_time.Sub(start_time)
 	fmt.Println()
-	__write_string__(fd, "\n", false)
+
+	if len(bug_container) > 0 {
+		__write_string__(fd, "", true)
+		__write_string__(fd, "Найденные баги:", true)
+		for _, elem := range bug_container {
+			__write_string__(fd, elem.To_string(), true)
+		}
+	}
+
 	colored_txt_output(spend_time_on_test, yellow)
 	__write_string__(fd, spend_time_on_test, true)
 
@@ -221,10 +240,11 @@ func help_menu(current_tc *ta.TestCase, save_point_device string) {
 	colored_txt_output("1. Сохранить прогресс,", white)
 	colored_txt_output("2. Информация о текущем тест кейсе,", white)
 	colored_txt_output("3. Загрузить прогресс,", white)
-	colored_txt_output("4. Посмотреть результаты,", white)
-	colored_txt_output("5. Посмотреть баги,", white)
-	colored_txt_output("6. Версия приложения,", white)
-	colored_txt_output("7. Закрыть меню.", white)
+	colored_txt_output("4. Включить таймер,", white)
+	colored_txt_output("5. Посмотреть результаты,", white)
+	colored_txt_output("6. Посмотреть баги,", white)
+	colored_txt_output("7. Версия приложения,", white)
+	colored_txt_output("8. Закрыть меню.", white)
 	fmt.Println("Введите номер действия:")
 	fmt.Print(user_input_sign)
 	var user_input, err = int_user_input("")
@@ -238,6 +258,13 @@ func help_menu(current_tc *ta.TestCase, save_point_device string) {
 			} else {
 				__write_string__(file, "Остановился здесь - "+current_tc.Name+", Устройство - "+save_point_device, true)
 				__write_string__(file, load_parameters.to_string(), true)
+				if len(bug_container) > 0 {
+					__write_string__(file, "", true)
+					__write_string__(file, "Найденные баги:", true)
+					for _, elem := range bug_container {
+						__write_string__(file, elem.To_string(), true)
+					}
+				}
 				err := file.Close()
 				if err != nil {
 					return
@@ -255,6 +282,16 @@ func help_menu(current_tc *ta.TestCase, save_point_device string) {
 			colored_txt_output(loaded_string, green)
 			break
 		case 4:
+			var timer_count, _ = int_user_input("Введите количества минут для ожидания.")
+			colored_txt_output("Таймер включен:", blue)
+			colored_txt_output("Раз в минуту будет показываться время:", blue)
+			for timer_count != 0 {
+				colored_txt_output(timer_count, green)
+				time.Sleep(60 * time.Second)
+				timer_count--
+			}
+			break
+		case 5:
 			if devices_count == 1 {
 				colored_txt_output("Получение результатов тестирования не доступно для режима одного устройства.", blue)
 				break
@@ -262,7 +299,7 @@ func help_menu(current_tc *ta.TestCase, save_point_device string) {
 				get_results(false)
 			}
 			break
-		case 5:
+		case 6:
 			for _, bug := range bug_container {
 				colored_txt_output("\tИмя бага: "+bug.Name, white)
 				colored_txt_output("\tПриоритет бага: "+bug.Priority, white)
@@ -270,10 +307,10 @@ func help_menu(current_tc *ta.TestCase, save_point_device string) {
 				colored_txt_output("\tВложенное сообщение: "+bug.Msg, white)
 				fmt.Println()
 			}
-		case 6:
+		case 7:
 			colored_txt_output("Версия приложения - "+app_version, white)
 			break
-		case 7:
+		case 8:
 			break
 		}
 	} else {

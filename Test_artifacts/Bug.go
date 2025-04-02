@@ -38,6 +38,10 @@ func (b Bug) GetSeverity() string {
 	}
 }
 
+func (b Bug) To_string() string {
+	return fmt.Sprintf("\tИмя бага: %s,\n\tПриоритет бага: %s,\n\tВажность бага: %s,\n\tСообщение: %s\n", b.Name, b.Priority, b.Severity, b.Msg)
+}
+
 func (b Bug) print() {
 	fmt.Println("Имя бага: " + b.Name)
 }
